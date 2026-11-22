@@ -1,0 +1,15 @@
+; door-guard: 感应(motion) 有人 -> 开门；无人 -> 不动
+.const 0
+.function 0 0 door-guard
+PUSH_C 0        ; 占位参数给 HOST
+HOST 2          ; read:motion -> 1(有人)
+PUSH_C 0        ; 阈值 0
+GT              ; motion > 0 ?
+DUP
+JZ done
+PUSH_C 0        ; 占位参数
+HOST 3          ; open:door
+DROP
+done:
+RET
+.end

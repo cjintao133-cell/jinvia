@@ -1,0 +1,28 @@
+; array-sum: 把三个数存进线性内存，再读回来相加 = 60
+.const 10
+.const 20
+.const 30
+.const 0
+.const 8
+.const 16
+.memory 1
+.function 0 0 array-sum
+PUSH_C 3        ; addr 0
+PUSH_C 0        ; val 10
+MEM_STORE
+PUSH_C 4        ; addr 8
+PUSH_C 1        ; val 20
+MEM_STORE
+PUSH_C 5        ; addr 16
+PUSH_C 2        ; val 30
+MEM_STORE
+PUSH_C 3
+MEM_LOAD
+PUSH_C 4
+MEM_LOAD
+ADD
+PUSH_C 5
+MEM_LOAD
+ADD
+RET
+.end

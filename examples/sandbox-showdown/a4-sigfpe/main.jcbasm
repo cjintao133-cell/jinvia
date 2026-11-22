@@ -1,0 +1,8 @@
+.const -9223372036854775808
+.const -1
+.function 0 0 main
+PUSH_C 0
+PUSH_C 1
+DIV
+RET
+.end

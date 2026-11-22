@@ -1,0 +1,29 @@
+name: Bug report
+description: Something is wrong with the engine, CLI, compiler, or examples.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Command run, expected vs actual output.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit / version
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform / compiler
+      placeholder: "e.g. Ubuntu 24.04, gcc 15, x86-64"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproducer
+      description: .jcbasm / .c / bytes + exact command.

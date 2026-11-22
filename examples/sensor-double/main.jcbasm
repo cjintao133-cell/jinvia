@@ -1,0 +1,9 @@
+; sensor-double: 读一次温度 x2
+.const 2
+.function 0 0 sensor-double
+PUSH_C 0        ; 占位参数
+HOST 0          ; read:temp -> 34
+PUSH_C 0        ; 2
+MUL
+RET
+.end

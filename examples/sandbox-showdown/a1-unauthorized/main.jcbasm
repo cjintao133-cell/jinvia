@@ -1,0 +1,5 @@
+.const 0
+.function 0 0 main
+PUSH_C 0
+RET
+.end

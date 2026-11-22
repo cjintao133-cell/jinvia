@@ -1,0 +1,13 @@
+*.a
+*.jcb
+*.log
+*.o
+*.so
+*.wasm
+/jinvia
+build/
+crash-*
+*.gcov
+examples/cc/*/main.jcbasm
+# 示例的字节码是测试与 CLI 的输入（且 evil 无源可重生），需入库；cc/、sandbox 下的构建产物仍忽略
+!examples/*/main.jcb

@@ -1,0 +1,7 @@
+.const -1
+.memory 1
+.function 0 0 main
+PUSH_C 0
+MEM_LOAD
+RET
+.end

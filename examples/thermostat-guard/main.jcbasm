@@ -1,0 +1,17 @@
+; thermostat-guard: 读温度(host0) 超30 -> 报警(host1) -> 返回1
+.const 30
+.const 0
+.const 1
+.function 0 0 thermostat-guard
+PUSH_C 1        ; 占位参数给 HOST0
+HOST 0          ; read:temp -> 34
+PUSH_C 0        ; 30
+GT
+DUP
+JZ done
+PUSH_C 2        ; 1
+HOST 1          ; call:alarm
+DROP
+done:
+RET
+.end

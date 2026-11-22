@@ -1,0 +1,4 @@
+.function 0 0 main
+L0:
+JMP L0
+.end
