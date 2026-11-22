@@ -9,6 +9,8 @@
 ![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
 ![C11 · zero deps](https://img.shields.io/badge/C11-zero%20dependencies-brightgreen.svg)
 
+![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
+
 Jinvia is a **pure-C11, zero-dependency capability sandbox**. Capabilities ship as portable bytecode (**JCB**) and run in a least-privilege, default-deny VM. One C compiler is the entire prerequisite — no Rust, Go, JVM, or WASM runtime to install.
 
 ## Why now: a pure-C sandbox floor for AI tools

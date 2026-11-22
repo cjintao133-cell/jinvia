@@ -2,6 +2,8 @@
 ![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
 ![C11 · zero deps](https://img.shields.io/badge/C11-zero%20dependencies-brightgreen.svg)
 
+![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
+
 # Jinvia · 星垠
 
 [English](README.en.md) · [中文](README.md)
