@@ -12,6 +12,6 @@ LABEL org.opencontainers.image.title="jinvia" \
       org.opencontainers.image.licenses="Apache-2.0"
 WORKDIR /app
 COPY --from=build /src/jinvia /app/jinvia
-COPY --from=build /src/examples /app/examples
+COPY --from=build /src/tools /app/tools
 # MCP JSON-RPC 2.0 over stdin/stdout
-ENTRYPOINT ["/app/jinvia", "mcp", "/app/examples"]
+ENTRYPOINT ["/app/jinvia", "mcp", "/app/tools"]
