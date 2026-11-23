@@ -2,6 +2,7 @@
 # 徽章：https://api.securityscorecards.dev/projects/github.com/cjintao133-cell/jinvia/badge
 name: OpenSSF Scorecard
 on:
+  workflow_dispatch:   # 可手动重跑（GCR 偶发不可用时用它重试）
   branch_protection_rule:
   schedule:
     - cron: '30 2 * * 1'

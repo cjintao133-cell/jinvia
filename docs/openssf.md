@@ -22,3 +22,10 @@ Jinvia 按 OpenSSF 的口径把「单人能拿的」都焊死；有些徽章只�
 
 ## 单人 Scorecard 天花板（诚实）
 - Code-Review=0、Contributors=0、Maintained/flags 需时间；单人规则上 Scorecard 9.0 基本到顶约 **8.7–8.9**。计划：day-1 把 Branch-Protection、Security-Policy、License、CI-Tests、Fuzzing、Pinned-Dependencies、Token-Permissions、SAST 等单人可满分项焊死。
+
+## 当前状态（转 public 后，2026-11-23）
+- **仓库已 public**：https://github.com/cjintao133-cell/jinvia
+- **CI**：✅ 绿（run on 9296e97）
+- **CodeQL**：✅ 绿（c-cpp 分析通过，SARIF 已上传到 Security 页）
+- **OpenSSF Scorecard**：工作流已就位并触发，但 action 运行**失败**——原因是 GitHub 托管 runner 拉取 `gcr.io/openssf/scorecard-action` 镜像时报 Google GCR「project requires billing」（**外部基础设施故障，非本仓库配置**）。已加 `workflow_dispatch` 手动重跑 + 每周一 cron 自动重试；Google 侧恢复后，`api.securityscorecards.dev` 会发布分数、README 的 Scorecard 徽章自动变成具体分值。届时可再 `git` 触发一次或点 Actions 里「Re-run」。
+- **CII Best Practices**：需在 bestpractices.dev 注册并填问卷后拿 badge（见 PUBLISH.md 第 3 步）。
