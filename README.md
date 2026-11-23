@@ -30,7 +30,7 @@ Jinvia 补的是同一块地板里**最底下那一层**：
 - **极小沙箱**：默认拒绝 + 资源预算 + 边界检查，恶意字节码当场被拦（见下方「沙箱对抗」）。
 - **同构**：同一份能力包，从一块芯片到一台服务器跑的是同一套字节码。
 
-> 诚实地说：**Jinvia 现在还没有接 MCP transport**。本仓库提供的是沙箱内核 + 字节码 + 一个能写 C 的编译器；把 MCP 工具「喂」进这个沙箱的适配层是 roadmap。但你要的那块**地板**，已经在这里了。
+> Jinvia 现在**自带一个最小 MCP stdio 服务器**（`jinvia mcp <工具目录>`）：每个能力包 = 一个 MCP tool，`tools/call` 时在沙箱里跑、默认拒绝。见 [`docs/mcp.md`](docs/mcp.md)。仍在 roadmap：HTTP transport、resources/prompts、鉴权、参数传递。
 
 ---
 
@@ -169,6 +169,26 @@ bash examples/sandbox-showdown/showdown.sh --check   # CI 模式：7/7 被拦才
 
 结果：**全部当场被拦**——2 个在加载期被权限闸拒绝，5 个在运行期被算术 / 内存 / 预算守卫拦下，宿主零崩溃、零越权。这就是「默认拒绝 + 资源预算 + 边界检查」三根柱子的现场版。
 
+## 当 MCP 服务器（给 AI 工具套沙箱）
+
+Jinvia 自带一个**纯 C、零依赖的最小 MCP stdio 服务器**：把任意目录下的能力包暴露成 MCP tools，LLM 调用时在沙箱里执行其字节码。
+
+```bash
+./jinvia mcp examples          # 用 examples/ 当工具目录，通过 stdin/stdout 讲 MCP JSON-RPC
+```
+
+接到 Claude Desktop 等 MCP 客户端（配置里）：
+
+```json
+{ "mcpServers": { "jinvia": { "command": "/abs/path/jinvia", "args": ["mcp", "/abs/path/my-tools"] } } }
+```
+
+- `tools/list` → 每个能力包 = 一个 tool（name/description 来自 `capability.conf`）
+- `tools/call` → 在沙箱里执行；**未在 `needs` 声明且宿主未注册的宿主能力 → 默认拒绝**（`isError:true`）
+- 支持 `initialize` / `tools/list` / `tools/call` / `ping`；其余方法返回 `-32601`
+
+> 关键区别：常规 MCP 服务器是**跑在宿主机上的原生二进制**，不可信工具≈宿主全权限；Jinvia 让工具作为**沙箱里的字节码**运行，只能通过宿主显式注册的回调碰硬件，且超预算即被掐。详见 [`docs/mcp.md`](docs/mcp.md)。
+
 ## JCB 字节码（自己的，不是 WASM）
 
 固定宽度小端、~23 条 i64 栈机指令，解析器几十行纯 C 就能写。详见 [`SPEC_JCB.md`](SPEC_JCB.md)。
@@ -185,6 +205,7 @@ WASM 生态最大，但对这个项目是负担：完整实现 WASM 规范面太
 - ✅ **已修的 4 个真安全洞**：重复区段内存泄漏、`INT64_MIN/-1` 触发 SIGFPE 崩进程、`nparams` 无上限致栈越界、内存越界检查的 `addr+8` 无符号溢出（负地址可绕过 → 越界读）。
 - ✅ **源级可移植**：字符符号性矩阵（x86 有符号 / ARM 无符号）双过、`-Wcast-align=strict` / `-Wshadow` 全干净。
 - ⚠️ **真机跨架构未验证**：ARM / 32 位“实际跑通”需在有交叉工具链 + QEMU 的机器上跑 `portability.sh` 第 3 步。
+- ✅ **自带最小 MCP stdio 服务器**（tools/list+tools/call，默认拒绝）。
 - ⚠️ **未经外部安全审计**：这是工作草案，别当作“production-grade”宣称。
 
 ## 目录

@@ -5,6 +5,7 @@ All notable changes to this project are documented here. Format based on [Keep a
 ## [Unreleased]
 
 ### Added
+- **MCP stdio server** (`jinvia mcp <tools-dir>`): exposes capability packages as MCP tools; `tools/call` runs untrusted bytecode inside the sandbox with default-deny. Methods: initialize / tools/list / tools/call / ping. Self-contained JSON parser (zero deps). Docs: `docs/mcp.md`.
 - Pure-C **C-subset compiler** (`jinvia cc in.c out.jcbasm`): `int` globals/locals, functions/recursion, arithmetic, comparisons, `&& || !`, `if/else/while/return`, `extern int host(int)`. Tests: normal + ASan/UBSan + Valgrind.
 - `examples/cc/` — five runnable C programs (fib, gcd, primes, collatz, sensor-double).
 - `examples/sandbox-showdown/` — 7 malicious capabilities, all blocked; `showdown.sh` (+ `--check`).

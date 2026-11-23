@@ -23,7 +23,7 @@ Jinvia pours the **bottom layer of that same floor**:
 - **Tiny sandbox** — default-deny + resource budgets + bounds checks; malicious bytecode is stopped on the spot (see *Sandbox showdown*).
 - **Isomorphic** — the same capability package runs unchanged from a chip to a server.
 
-> Honest note: **Jinvia does not speak MCP yet.** This repo is the sandbox kernel + bytecode + a C-subset compiler; the MCP adapter that feeds MCP tool calls into this sandbox is on the roadmap. But the *floor* is here.
+> Jinvia **ships a minimal MCP stdio server** (`jinvia mcp <tools-dir>`): every capability package is an MCP tool, and `tools/call` runs it inside the sandbox, default-deny. See [`docs/mcp.md`](docs/mcp.md). Still on the roadmap: HTTP transport, resources/prompts, auth, argument passing.
 
 ## Performance & footprint
 
@@ -126,6 +126,26 @@ bash examples/sandbox-showdown/showdown.sh --check   # CI: 0 exit only if 7/7 bl
 
 Result: **all 7 blocked** (2 at load by the capability gate, 5 at runtime by the arithmetic/memory/budget guards), zero crashes, zero escalation.
 
+## Run as an MCP server (sandboxed AI tools)
+
+Jinvia ships a **pure-C, zero-dependency minimal MCP stdio server**: point it at a directory of capability packages and each becomes an MCP tool; an LLM's `tools/call` runs that tool's bytecode *inside the sandbox*.
+
+```bash
+./jinvia mcp examples          # use examples/ as the tools dir, speak MCP JSON-RPC over stdio
+```
+
+Wire into an MCP client (e.g. Claude Desktop):
+
+```json
+{ "mcpServers": { "jinvia": { "command": "/abs/path/jinvia", "args": ["mcp", "/abs/path/my-tools"] } } }
+```
+
+- `tools/list` → each capability package = one tool (name/description from `capability.conf`)
+- `tools/call` → runs in the sandbox; a host capability **not declared in `needs` and not registered → refused** (`isError:true`)
+- Methods: `initialize` / `tools/list` / `tools/call` / `ping`; others → `-32601`
+
+> The difference that matters: a conventional MCP server is a **native binary on the host** — an untrusted tool gets the host's full privileges. Jinvia runs the tool as **bytecode inside a sandbox**: it touches the host only through the callbacks the host explicitly registered, and it can't hang the host (step/stack/frame budgets). See [`docs/mcp.md`](docs/mcp.md).
+
 ## JCB bytecode (ours, not WASM)
 
 Fixed-width little-endian, ~40-op i64 stack machine with linear memory, globals and f32/f64. See [`SPEC_JCB.md`](SPEC_JCB.md).
@@ -139,7 +159,8 @@ The WASM spec surface is huge to implement correctly; one person can't easily ma
 - ✅ **Tests**: 16 suites (each normal + ASan/UBSan + Valgrind, incl. 3-mode C-compiler suite), multi-million-sample custom fuzzing + libFuzzer, mutation tests. CI on gcc/clang, x86-32, and aarch64 via QEMU.
 - ✅ **4 real bugs found by fuzzing and fixed**: duplicate-section leak, `INT64_MIN/-1` SIGFPE, unbounded `nparams` stack overflow, `addr+8` unsigned-overflow OOB read.
 - ✅ **Source-level portability**: char signedness matrix, `-Wcast-align=strict` / `-Wshadow` clean.
-- ⚠️ **Not MCP-integrated yet** (adapter is roadmap); **no external security audit**; C subset has no arrays/pointers/float yet.
+- ✅ **Ships a minimal MCP stdio server** (tools/list + tools/call, default-deny).
+- ⚠️ **No external security audit**; C subset has no arrays/pointers/float yet; MCP is stdio-only (no HTTP/resources/prompts yet).
 
 ## Directory
 

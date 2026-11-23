@@ -32,10 +32,11 @@ run_suite embed  src/cap.c src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_
 run_suite verify src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c src/jcb_disasm.c tests/test_verify.c
 run_suite float  src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c tests/test_float.c
 run_suite cc     src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c src/jcb_cc.c tests/test_cc.c
+run_suite mcp    src/cap.c src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c src/jinvia.c src/mcp.c tests/test_mcp.c
 
 # CLI 集成：编译 jinvia，跑示例能力，校验退出码与输出
 echo "----- cli integration -----"
-if $CC $FLAGS $INC src/cap.c src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c src/jcb_disasm.c src/jcb_cc.c src/jinvia.c src/main.c -o "$OUT/jinvia"; then
+if $CC $FLAGS $INC src/cap.c src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c src/jcb_disasm.c src/jcb_cc.c src/mcp.c src/jinvia.c src/main.c -o "$OUT/jinvia"; then
   out=$("$OUT/jinvia" run examples/thermostat-guard 2>&1); rc=$?
   if [ $rc -eq 0 ] && echo "$out" | grep -q "报警" && echo "$out" | grep -q "结果 = 1"; then echo " [OK] thermostat-guard"; else echo " [FAIL] thermostat-guard"; fail=1; fi
   "$OUT/jinvia" run examples/evil >/dev/null 2>&1; [ $? -eq 3 ] && echo " [OK] evil denied(3)" || { echo " [FAIL] evil not denied"; fail=1; }
@@ -49,6 +50,12 @@ if $CC $FLAGS $INC src/cap.c src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jc
      && "$OUT/jinvia" asm build/ccdemo/main.jcbasm build/ccdemo/main.jcb >/dev/null 2>&1 \
      && printf 'name: main\ndoes: fib\nneeds:\nentry: main.jcb\n' > build/ccdemo/capability.conf \
      && out=$("$OUT/jinvia" run build/ccdemo 2>&1) && echo "$out" | grep -q "结果 = 6765"; then echo " [OK] cc e2e fib=6765"; else echo " [FAIL] cc e2e"; fail=1; fi
+  # MCP stdio e2e：喂 initialize/tools-list/tools-call，校验 result=55
+  mout=$(printf '%s\n' \
+    '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+    '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+    '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"sum-1-to-10"}}' | "$OUT/jinvia" mcp examples 2>/dev/null)
+  if echo "$mout" | grep -q "result = 55" && echo "$mout" | grep -q "thermostat-guard"; then echo " [OK] mcp e2e result=55"; else echo " [FAIL] mcp e2e"; fail=1; fi
 else echo " [FAIL] cli build"; fail=1; fi
 
 

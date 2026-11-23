@@ -5,6 +5,7 @@
 #include "jinvia/cap.h"
 #include "jinvia/jcb.h"
 #include "jinvia/cc.h"
+#include "jinvia/mcp.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -57,6 +58,10 @@ int main(int argc, char **argv) {
         if (n < 0) { fprintf(stderr, "反汇编失败: %s\n", err_name(n)); j_free(&m); return 1; }
         out[n] = '\0'; fputs(out, stdout); j_free(&m); return 0;
     }
+    if (argc >= 2 && strcmp(argv[1], "mcp") == 0) {
+        const char *dir = (argc >= 3) ? argv[2] : ".";
+        return j_mcp_serve(dir, stdin, stdout);
+    }
     if (argc >= 2 && strcmp(argv[1], "cc") == 0) {
         if (argc < 4) { fprintf(stderr, "用法: jinvia cc <in.c> <out.jcbasm>\n"); return 2; }
         static char csrc[1 << 20]; size_t clen;
@@ -71,7 +76,7 @@ int main(int argc, char **argv) {
         printf("已编译 C 子集 %s -> %s\n", argv[2], argv[3]); return 0;
     }
     if (argc < 3 || strcmp(argv[1], "run") != 0) {
-        fprintf(stderr, "用法:\n  jinvia run [--trace] <能力目录>\n  jinvia asm <in.jcbasm> <out.jcb>\n  jinvia dis <file.jcb>\n  jinvia cc <in.c> <out.jcbasm>\n");
+        fprintf(stderr, "用法:\n  jinvia run [--trace] <能力目录>\n  jinvia asm <in.jcbasm> <out.jcb>\n  jinvia dis <file.jcb>\n  jinvia cc <in.c> <out.jcbasm>\n  jinvia mcp <工具目录>\n");
         return 2;
     }
     int ai = 2; if (strcmp(argv[2], "--trace") == 0) { g_trace = 1; ai = 3; }
