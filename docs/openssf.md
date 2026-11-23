@@ -29,3 +29,17 @@ Jinvia 按 OpenSSF 的口径把「单人能拿的」都焊死；有些徽章只�
 - **CodeQL**：✅ 绿（c-cpp 分析通过，SARIF 已上传到 Security 页）
 - **OpenSSF Scorecard**：工作流已就位并触发，但 action 运行**失败**——原因是 GitHub 托管 runner 拉取 `gcr.io/openssf/scorecard-action` 镜像时报 Google GCR「project requires billing」（**外部基础设施故障，非本仓库配置**）。已加 `workflow_dispatch` 手动重跑 + 每周一 cron 自动重试；Google 侧恢复后，`api.securityscorecards.dev` 会发布分数、README 的 Scorecard 徽章自动变成具体分值。届时可再 `git` 触发一次或点 Actions 里「Re-run」。
 - **CII Best Practices**：需在 bestpractices.dev 注册并填问卷后拿 badge（见 PUBLISH.md 第 3 步）。
+
+## Scorecard 现状快照与"为何比 Go 内核低"（2026-11-23, main=bbed1cb, 6.5/10）
+
+12 项满分(10/10)：Security-Policy, CI-Tests, SAST(CodeQL), Fuzzing, Vulnerabilities, Token-Permissions,
+Pinned-Dependencies, Dangerous-Workflow, License, Binary-Artifacts, Dependency-Update-Tool。
+与 star-river(Go, 7.7/10) 逐项对比，jinvia 在**所有安全/质量项上不相上下或更好**。差距全部来自 3 项：
+
+| 项 | star-river | jinvia | 为什么 |
+|---|---|---|---|
+| CII-Best-Practices | 7 | 0 | **就是这个(Silver)**：需在 bestpractices.dev 注册本仓库并填问卷；star-river 注册过，jinvia 没有。**只能仓库所有者本人登录操作**（OAuth），约 10 分钟。 |
+| Packaging | 10 | -1 | Go 项目自带 `go.mod` 视作可分发包；C 无 Scorecard 认可的发包渠道。试过 docker 打包→v2.4.3 内置旧版 Scorecard 不识别，反而把 Pinned-Dependencies 拖到 7，已回滚。 |
+| Signed-Releases | 4 | 0 | star-river 的 release 有签名(部分)；jinvia 的 release 未做 GPG/sigstore 签名。 |
+
+**结论**：加上 CII 徽章(+7) 后，jinvia 约为 7.5–7.8，即与 star-river 持平或更高。这一步需要你本人注册（你给 star-river 做过，同样流程）。
