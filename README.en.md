@@ -156,7 +156,7 @@ The WASM spec surface is huge to implement correctly; one person can't easily ma
 
 ## Status (honest)
 
-- ✅ **Tests**: 16 suites (each normal + ASan/UBSan + Valgrind, incl. 3-mode C-compiler suite), multi-million-sample custom fuzzing + libFuzzer, mutation tests. CI on gcc/clang, x86-32, and aarch64 via QEMU.
+- ✅ **Tests**: 17 suites (each normal + ASan/UBSan + Valgrind, incl. 3-mode C-compiler and MCP suites), multi-million-sample custom fuzzing + libFuzzer, mutation tests. CI on gcc/clang, x86-32, and aarch64 via QEMU.
 - ✅ **4 real bugs found by fuzzing and fixed**: duplicate-section leak, `INT64_MIN/-1` SIGFPE, unbounded `nparams` stack overflow, `addr+8` unsigned-overflow OOB read.
 - ✅ **Source-level portability**: char signedness matrix, `-Wcast-align=strict` / `-Wshadow` clean.
 - ✅ **Ships a minimal MCP stdio server** (tools/list + tools/call, default-deny).
