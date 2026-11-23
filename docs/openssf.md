@@ -43,3 +43,5 @@ Pinned-Dependencies, Dangerous-Workflow, License, Binary-Artifacts, Dependency-U
 | Signed-Releases | 4 | 0 | star-river 的 release 有签名(部分)；jinvia 的 release 未做 GPG/sigstore 签名。 |
 
 **结论**：加上 CII 徽章(+7) 后，jinvia 约为 7.5–7.8，即与 star-river 持平或更高。这一步需要你本人注册（你给 star-river 做过，同样流程）。
+
+<!-- protection push test -->
