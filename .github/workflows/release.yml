@@ -21,14 +21,15 @@ jobs:
         run: |
           mkdir -p dist
           tar czf "dist/jinvia-${{ github.ref_name }}.tar.gz" \
-            jinvia build/libjinvia.a build/libjinvia.so include examples README.md README.en.md LICENSE
+            jinvia build/libjinvia.a build/libjinvia.so include examples README.md README.en.md LICENSE SECURITY.md CHANGELOG.md
           ( cd dist && sha256sum * > SHA256SUMS.txt )
           ls -l dist
       - name: Publish release (attach artifacts)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "${{ github.ref_name }}" dist/* \
-            --title "Jinvia ${{ github.ref_name }}" \
-            --notes "See CHANGELOG.md for details. Verified by CI (gcc/clang, ASan/UBSan, Valgrind, x86-32, aarch64-QEMU)." \
-            || gh release upload "${{ github.ref_name }}" dist/* --clobber
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/SHA256SUMS.txt
+          name: Jinvia ${{ github.ref_name }}
+          draft: false
+          prerelease: false
