@@ -46,3 +46,4 @@ Pinned-Dependencies, Dangerous-Workflow, License, Binary-Artifacts, Dependency-U
 
 <!-- protection push test -->
 <!-- ruleset push test -->
+<!-- bp enrich test -->
