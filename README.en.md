@@ -6,6 +6,7 @@
 [中文](README.md) · English
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/cjintao133-cell/jinvia/badge)](https://scorecard.dev/viewer/?uri=github.com/cjintao133-cell/jinvia)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/17017/badge)](https://www.bestpractices.dev/projects/17017)
 [![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml)
 
