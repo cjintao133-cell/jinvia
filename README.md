@@ -8,7 +8,6 @@
 ![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20MCU-informational.svg)
 ![MCP](https://img.shields.io/badge/MCP-stdio%20server-blueviolet.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/cjintao133-cell/jinvia/badge)](https://scorecard.dev/viewer/?uri=github.com/cjintao133-cell/jinvia)
 
 ![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
 
