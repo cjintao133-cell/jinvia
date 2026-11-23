@@ -6,8 +6,7 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: read-all
 
 jobs:
   gate:
@@ -18,42 +17,37 @@ jobs:
       matrix:
         cc: [ gcc, clang ]
     steps:
-      - uses: actions/checkout@v4
-      - name: 安装依赖（valgrind）
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install valgrind
         run: |
           sudo apt-get update
           sudo apt-get install -y valgrind
-      - name: 严格构建 (-Werror)
+      - name: Strict build (-Werror)
         run: make CC=${{ matrix.cc }}
-      - name: C 门禁（normal + ASan/UBSan + Valgrind + fuzz + CLI + 沙箱对抗）
+      - name: C gate (normal + ASan/UBSan + Valgrind + fuzz + CLI + sandbox showdown)
         run: CC=${{ matrix.cc }} bash test-c.sh
 
   coverage:
-    name: coverage · ≥80%
+    name: coverage · >=80%
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: 覆盖率门禁
-        run: bash cov.sh 80
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: bash cov.sh 80
 
   portability:
     name: portability · source-level
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: 源级可移植性（字符符号性 + 严格告警）
-        run: bash portability.sh
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: bash portability.sh
 
   arch32:
     name: arch · x86-32 (-m32)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: 安装 32 位工具链
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib
-      - name: 32 位编译 + 运行核心单测
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+      - name: 32-bit build + run
         run: |
           mkdir -p build
           gcc -m32 -O2 -Wall -Wextra -Werror -std=c11 -Iinclude \
@@ -65,12 +59,9 @@ jobs:
     name: arch · aarch64 (QEMU)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: 安装 ARM 交叉工具链 + QEMU
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu qemu-user
-      - name: 交叉编译 + QEMU 运行核心单测
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu qemu-user
+      - name: cross-compile + QEMU run
         run: |
           mkdir -p build
           CC=aarch64-linux-gnu-gcc
@@ -78,9 +69,6 @@ jobs:
             src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c \
             tests/test_edge.c -o build/test_edge_arm
           qemu-aarch64 -L /usr/aarch64-linux-gnu ./build/test_edge_arm && echo "aarch64 OK"
-      - name: 交叉编译 + QEMU 跑 C 子集编译器测试
-        run: |
-          CC=aarch64-linux-gnu-gcc
           $CC -O2 -Wall -Wextra -Werror -std=c11 -Iinclude \
             src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c src/jcb_cc.c \
             tests/test_cc.c -o build/test_cc_arm
@@ -90,13 +78,9 @@ jobs:
     name: static · cppcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: 安装 cppcheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cppcheck
-      - name: cppcheck（error 级失败，style 仅报告）
-        run: |
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: sudo apt-get update && sudo apt-get install -y cppcheck
+      - run: |
           cppcheck --std=c11 --enable=warning,performance --inline-suppr \
             --error-exitcode=1 -Iinclude src/ 2> cppcheck.log || { cat cppcheck.log; exit 1; }
           echo "cppcheck passed"

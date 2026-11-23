@@ -5,16 +5,9 @@
 
 [中文](README.md) · English
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/cjintao133-cell/jinvia/badge)](https://scorecard.dev/viewer/?uri=github.com/cjintao133-cell/jinvia)
 [![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-![C11](https://img.shields.io/badge/C11-pure%20C-blue.svg)
-![Dependencies](https://img.shields.io/badge/third--party%20deps-0-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/coverage-80.7%25%20core-brightgreen.svg)
-![Throughput](https://img.shields.io/badge/throughput-~270%20MIPS-blue.svg)
-[![Release](https://img.shields.io/github/v/release/cjintao133-cell/jinvia?include_prereleases&sort=semver)](https://github.com/cjintao133-cell/jinvia/releases)
-![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20MCU-informational.svg)
-![MCP](https://img.shields.io/badge/MCP-stdio%20server-blueviolet.svg)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+[![CodeQL](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml)
 
 ![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
 
