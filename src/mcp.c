@@ -180,7 +180,7 @@ static const char *jget_str(JV *o, const char *k) { JV *v = jget(o, k); return (
 /* 序列化 JSON 字符串（带引号） */
 static void jesc(SB *o, const char *s) {
     sbz(o, "\"");
-    for (const unsigned char *p = (const unsigned char *)s; *p; p++) {
+    for (const unsigned char *p = (const unsigned char *)(s ? s : ""); *p; p++) { /* 防御 NULL：缺失字段按空串序列化 */
         unsigned char c = *p;
         switch (c) {
             case '"': sbz(o, "\\\""); break;
@@ -357,6 +357,30 @@ static void handle_request(const char *tools_dir, JV *req, FILE *out) {
     emit_error(out, idv, -32601, "method not found");
 }
 
+/* 可移植的行读取：替代 POSIX 独有 getline（Windows 无）。
+   成功读一行返回字节数(>=0)，EOF 返回 -1，内存不足返回 -2。 */
+static long read_line(char **line, size_t *cap, FILE *in) {
+    size_t n = 0; int c; int got = 0;
+    if (!line || !cap || !in) return -2;
+    if (*line == NULL || *cap == 0) {
+        *cap = 256; *line = (char *)malloc(*cap);
+        if (!*line) { *cap = 0; return -2; }
+    }
+    while ((c = fgetc(in)) != EOF) {
+        got = 1;
+        if (n + 1 >= *cap) {
+            size_t nc = *cap * 2; char *t = (char *)realloc(*line, nc);
+            if (!t) return -2;
+            *line = t; *cap = nc;
+        }
+        (*line)[n++] = (char)c;
+        if (c == '\n') break;
+    }
+    if (!got && c == EOF) return -1;
+    (*line)[n] = '\0';
+    return (long)n;
+}
+
 int j_mcp_handle_line(const char *tools_dir, const char *line, size_t len, FILE *out) {
     JV *req = jparse(line, len);
     if (!req) { emit_error(out, NULL, -32700, "parse error"); return 0; }
@@ -368,8 +392,8 @@ int j_mcp_handle_line(const char *tools_dir, const char *line, size_t len, FILE 
 
 int j_mcp_serve(const char *tools_dir, FILE *in, FILE *out) {
     if (!tools_dir || !in || !out) return -1;
-    char *line = NULL; size_t cap = 0; ssize_t n;
-    while ((n = getline(&line, &cap, in)) != -1) {
+    char *line = NULL; size_t cap = 0; long n;
+    while ((n = read_line(&line, &cap, in)) >= 0) {
         /* 去掉行尾换行 */
         while (n > 0 && (line[n - 1] == '\n' || line[n - 1] == '\r')) n--;
         if (n == 0) continue;

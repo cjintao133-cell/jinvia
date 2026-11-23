@@ -8,7 +8,7 @@ typedef struct { const uint8_t *p, *end; } JR;
 static int ru8(JR *r, uint8_t *o) { if (r->p >= r->end) return J_ERR_EOF; *o = *r->p++; return J_OK; }
 static int ru16(JR *r, uint16_t *o) {
     if ((size_t)(r->end - r->p) < 2) return J_ERR_EOF;
-    *o = (uint16_t)r->p[0] | ((uint16_t)r->p[1] << 8); r->p += 2; return J_OK;
+    *o = (uint16_t)((uint16_t)r->p[0] | ((uint16_t)r->p[1] << 8)); r->p += 2; return J_OK;
 }
 static int ru32(JR *r, uint32_t *o) {
     if ((size_t)(r->end - r->p) < 4) return J_ERR_EOF;

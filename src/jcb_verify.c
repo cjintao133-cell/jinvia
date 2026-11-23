@@ -58,7 +58,7 @@ static int verify_func(const JModule *m, uint32_t f, JInstr **pins, uint32_t *pn
 
     int *h = (int *)malloc((size_t)n * sizeof(int));
     int *todo = (int *)malloc((size_t)n * sizeof(int));
-    if (!h || !todo) { free(ins); free(h); free(todo); return J_ERR_OOM; }
+    if (!h || !todo) { free(h); free(todo); return J_ERR_OOM; } /* ins 所有权已在 *pins，交调用者释放 */
     for (uint32_t i = 0; i < n; i++) h[i] = -1;   /* -1 = 未定义 */
     int tn = 0;
     h[0] = 0; todo[tn++] = 0;                      /* 入口栈高 0（参数在 locals） */

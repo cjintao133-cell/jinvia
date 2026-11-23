@@ -39,9 +39,9 @@ typedef struct { uint8_t op; long operand; int is_label; char label[64]; } AIns;
 typedef struct { uint32_t nparams, nlocals; char export_name[J_MAX_NAME]; AIns *ins; uint32_t n, cap;
                  char (*labels)[64]; uint32_t *label_idx; uint32_t nlabels; } AFunc;
 
-static void put_u32(uint8_t **p, uint32_t v){ (*p)[0]=v&0xff;(*p)[1]=(v>>8)&0xff;(*p)[2]=(v>>16)&0xff;(*p)[3]=(v>>24)&0xff; *p+=4; }
+static void put_u32(uint8_t **p, uint32_t v){ (*p)[0]=(uint8_t)(v&0xff);(*p)[1]=(uint8_t)((v>>8)&0xff);(*p)[2]=(uint8_t)((v>>16)&0xff);(*p)[3]=(uint8_t)((v>>24)&0xff); *p+=4; }
 static void put_u64(uint8_t **p, uint64_t v){ for(int i=0;i<8;i++) (*p)[i]=(uint8_t)((v>>(8*i))&0xff); *p+=8; }
-static void put_u16(uint8_t **p, uint16_t v){ (*p)[0]=v&0xff;(*p)[1]=(v>>8)&0xff; *p+=2; }
+static void put_u16(uint8_t **p, uint16_t v){ (*p)[0]=(uint8_t)(v&0xff);(*p)[1]=(uint8_t)((v>>8)&0xff); *p+=2; }
 
 int j_asm(const char *text, uint8_t **out_buf, size_t *out_len){
     if(!text||!out_buf||!out_len) return J_ERR_FMT;
@@ -101,9 +101,11 @@ int j_asm(const char *text, uint8_t **out_buf, size_t *out_len){
             if(ln[L-1]==':'){
                 ln[L-1]='\0';
                 char (*nl2)[64]=realloc(cur->labels,(cur->nlabels+1)*sizeof(*cur->labels));
+                if(!nl2){ rc=J_ERR_OOM; goto done; }
+                cur->labels=nl2;
                 uint32_t *ni2=realloc(cur->label_idx,(cur->nlabels+1)*sizeof(uint32_t));
-                if(!nl2||!ni2){ free(nl2); free(ni2); rc=J_ERR_OOM; goto done; }
-                cur->labels=nl2; cur->label_idx=ni2;
+                if(!ni2){ rc=J_ERR_OOM; goto done; }
+                cur->label_idx=ni2;
                 scpy(cur->labels[cur->nlabels],64,ln);
                 cur->label_idx[cur->nlabels]=cur->n;
                 cur->nlabels++;
@@ -134,7 +136,7 @@ int j_asm(const char *text, uint8_t **out_buf, size_t *out_len){
     /* ---- 序列化（区段：id, size u32, payload）---- */
     {
         /* 先算 FUNCS / EXPORTS 负载大小 */
-        size_t funcs_plen=4; for(uint32_t f=0;f<nfuncs;f++){ funcs_plen+=12; for(uint32_t i=0;i<funcs[f].n;i++) funcs_plen += 1 + (has_operand(funcs[f].ins[i].op)?4:0); }
+        size_t funcs_plen=4; for(uint32_t f=0;f<nfuncs;f++){ funcs_plen+=12; for(uint32_t i=0;i<funcs[f].n;i++) funcs_plen += (size_t)(1 + (has_operand(funcs[f].ins[i].op)?4:0)); }
         uint32_t ne=0; for(uint32_t f=0;f<nfuncs;f++) if(funcs[f].export_name[0] && strcmp(funcs[f].export_name,"-")!=0) ne++;
         size_t exp_plen=4; for(uint32_t f=0;f<nfuncs;f++) if(funcs[f].export_name[0] && strcmp(funcs[f].export_name,"-")!=0) exp_plen += 2+strlen(funcs[f].export_name)+4;
         size_t memsec = mem_pages ? (1+4+4) : 0;

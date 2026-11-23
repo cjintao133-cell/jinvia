@@ -92,6 +92,7 @@ static int enter(JVM *vm, uint32_t f, Frame *frames, uint32_t *nf){
     int64_t *loc=NULL;
     if(tot){ loc=(int64_t*)calloc(tot,sizeof(int64_t)); if(!loc) return J_ERR_OOM; }
     if(vm->sp<np){ free(loc); return J_ERR_VM; }
+    if(np>0 && !loc){ return J_ERR_OOM; } /* 防御：np>0 时 tot>=np>0 必已分配，此分支不应触发 */
     for(uint32_t i=0;i<np;i++) loc[np-1-i]=vm->stack[--vm->sp];
     frames[*nf].func=f; frames[*nf].pc=0; frames[*nf].locals=loc; frames[*nf].nlocals=tot; (*nf)++;
     return J_OK;
@@ -176,12 +177,12 @@ int j_vm_call(JVM *vm, uint32_t func, const int64_t *args, uint32_t nargs, int64
             case OP_MEM_LOAD32:{ int64_t a; if(popv(vm,&a)){rc=J_ERR_VM;break;}
                 if(a<0){rc=J_ERR_VM;break;} uint64_t ua=(uint64_t)a;
                 if((uint64_t)vm->mem_size<4u || ua>(uint64_t)vm->mem_size-4u){rc=J_ERR_VM;break;}
-                uint64_t v=0; for(int i=0;i<4;i++) v|=(uint64_t)vm->mem[ua+i]<<(8*i);
+                uint64_t v=0; for(int i=0;i<4;i++) v|=(uint64_t)vm->mem[ua+(uint64_t)i]<<(8u*(unsigned)i);
                 if(pushv(vm,(int64_t)v)){rc=J_ERR_VM;break;} fr->pc++; }break;
             case OP_MEM_STORE32:{ int64_t v,a; if(popv(vm,&v)||popv(vm,&a)){rc=J_ERR_VM;break;}
                 if(a<0){rc=J_ERR_VM;break;} uint64_t ua=(uint64_t)a;
                 if((uint64_t)vm->mem_size<4u || ua>(uint64_t)vm->mem_size-4u){rc=J_ERR_VM;break;}
-                uint64_t uv=(uint64_t)v; for(int i=0;i<4;i++) vm->mem[ua+i]=(uint8_t)(uv>>(8*i));
+                uint64_t uv=(uint64_t)v; for(int i=0;i<4;i++) vm->mem[ua+(uint64_t)i]=(uint8_t)(uv>>(8u*(unsigned)i));
                 fr->pc++; }break;
             case OP_MEM_FILL:{ int64_t bv,ln,a; if(popv(vm,&bv)||popv(vm,&ln)||popv(vm,&a)){rc=J_ERR_VM;break;}
                 if(a<0||ln<0){rc=J_ERR_VM;break;}
@@ -227,12 +228,12 @@ int j_vm_call(JVM *vm, uint32_t func, const int64_t *args, uint32_t nargs, int64
             case OP_MEM_LOAD:{ int64_t a; if(popv(vm,&a)){rc=J_ERR_VM;break;}
                 if(a<0){rc=J_ERR_VM;break;} uint64_t ua=(uint64_t)a;
                 if((uint64_t)vm->mem_size < 8u || ua > (uint64_t)vm->mem_size - 8u){rc=J_ERR_VM;break;}
-                uint64_t v=0; for(int i=0;i<8;i++) v|=(uint64_t)vm->mem[ua+i]<<(8*i);
+                uint64_t v=0; for(int i=0;i<8;i++) v|=(uint64_t)vm->mem[ua+(uint64_t)i]<<(8u*(unsigned)i);
                 if(pushv(vm,(int64_t)v)){rc=J_ERR_VM;break;} fr->pc++; }break;
             case OP_MEM_STORE:{ int64_t v,a; if(popv(vm,&v)||popv(vm,&a)){rc=J_ERR_VM;break;}
                 if(a<0){rc=J_ERR_VM;break;} uint64_t ua=(uint64_t)a;
                 if((uint64_t)vm->mem_size < 8u || ua > (uint64_t)vm->mem_size - 8u){rc=J_ERR_VM;break;}
-                uint64_t uv=(uint64_t)v; for(int i=0;i<8;i++) vm->mem[ua+i]=(uint8_t)(uv>>(8*i));
+                uint64_t uv=(uint64_t)v; for(int i=0;i<8;i++) vm->mem[ua+(uint64_t)i]=(uint8_t)(uv>>(8u*(unsigned)i));
                 fr->pc++; }break;
             case OP_MEM_LOAD8:{ int64_t a; if(popv(vm,&a)){rc=J_ERR_VM;break;}
                 if(a<0){rc=J_ERR_VM;break;} uint64_t ua=(uint64_t)a; if(ua>=(uint64_t)vm->mem_size){rc=J_ERR_VM;break;}
