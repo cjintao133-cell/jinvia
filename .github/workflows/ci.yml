@@ -17,7 +17,7 @@ jobs:
       matrix:
         cc: [ gcc, clang ]
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install valgrind
         run: |
           sudo apt-get update
@@ -31,21 +31,21 @@ jobs:
     name: coverage · >=80%
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: bash cov.sh 80
 
   portability:
     name: portability · source-level
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: bash portability.sh
 
   arch32:
     name: arch · x86-32 (-m32)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: sudo apt-get update && sudo apt-get install -y gcc-multilib
       - name: 32-bit build + run
         run: |
@@ -59,7 +59,7 @@ jobs:
     name: arch · aarch64 (QEMU)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu qemu-user
       - name: cross-compile + QEMU run
         run: |
@@ -78,7 +78,7 @@ jobs:
     name: static · cppcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: sudo apt-get update && sudo apt-get install -y cppcheck
       - run: |
           cppcheck --std=c11 --enable=warning,performance --inline-suppr \
