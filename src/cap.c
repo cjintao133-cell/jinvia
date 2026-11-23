@@ -62,6 +62,27 @@ int sr_cap_parse(const char *text, SrCap *out) {
                     out->needs_count++;
                 }
             }
+        } else if (strcmp(key, "params") == 0) {
+            char *s = val;
+            while (*s && out->params_count < SR_PARAMS_MAX) {
+                while (*s == ',' || isspace((unsigned char)*s)) s++;
+                if (!*s) break;
+                char *start = s;
+                while (*s && *s != ',') s++;
+                if (*s == ',') { *s = '\0'; s++; }
+                char *item = ltrim(start);
+                rtrim(item);
+                if (*item) {
+                    /* name 或 name:type */
+                    char *type = (char *)"int";
+                    char *colon = strchr(item, ':');
+                    if (colon) { *colon = '\0'; rtrim(item); type = ltrim(colon + 1); rtrim(type); }
+                    SrParam *pm = &out->params[out->params_count];
+                    copy_trunc(pm->name, SR_PARAM_LEN, item);
+                    copy_trunc(pm->type, SR_PARAM_TYPE_LEN, type[0] ? type : "int");
+                    if (pm->name[0]) out->params_count++;
+                }
+            }
         }
         /* 未知 key 忽略——向前兼容 */
     }

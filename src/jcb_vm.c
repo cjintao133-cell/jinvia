@@ -98,6 +98,15 @@ static int enter(JVM *vm, uint32_t f, Frame *frames, uint32_t *nf){
     return J_OK;
 }
 
+uint32_t j_vm_mem_size(JVM *vm){ return vm ? vm->mem_size : 0; }
+int j_vm_mem_write(JVM *vm, uint32_t off, const void *src, uint32_t len){
+    if(!vm) return -1;
+    if(len && !src) return -1;
+    if((uint64_t)off + (uint64_t)len > (uint64_t)vm->mem_size) return -1;
+    if(len && vm->mem) memcpy(vm->mem + off, src, len);
+    return 0;
+}
+
 int j_vm_call(JVM *vm, uint32_t func, const int64_t *args, uint32_t nargs, int64_t *result){
     if(!vm || vm->err) return J_ERR_FMT;
     if(func>=vm->m->nfuncs) return J_ERR_FMT;

@@ -83,6 +83,9 @@ JLimits j_vm_default_limits(void);
 void    j_vm_set_limits(JVM *vm, JLimits lim);   /* 宿主收紧资源预算；超容量自动钳制 */
 /* 执行函数 func（参数 args/nargs），结果写入 *result。成功 J_OK。 */
 int  j_vm_call(JVM *vm, uint32_t func, const int64_t *args, uint32_t nargs, int64_t *result);
+/* 线性内存访问（供 MCP 参数注入等宿主侧使用）：返回字节大小 / 写入若干字节（越界返回 -1）。 */
+uint32_t j_vm_mem_size(JVM *vm);
+int      j_vm_mem_write(JVM *vm, uint32_t off, const void *src, uint32_t len);
 
 /* 砖6：JCB 汇编器。把文本 (.jcbasm) 编成 JCB 字节码。
  * 成功 J_OK 且 *out_buf 由 malloc 分配（调用方 free），*out_len 为字节数。 */

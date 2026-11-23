@@ -1,0 +1,7 @@
+; add: 返回 a + b，两个整数参数由 MCP 客户端传入
+.function 2 0 add
+LGET 0
+LGET 1
+ADD
+RET
+.end

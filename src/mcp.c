@@ -209,7 +209,7 @@ static void jemit(SB *o, JV *v) {
 }
 
 /* ---------- 能力包扫描 = 工具注册表 ---------- */
-typedef struct { char *name; char *does; char *dir; } Tool;
+typedef struct { char *name; char *does; char *dir; SrCap cap; } Tool;
 typedef struct { Tool *t; int n; } ToolSet;
 
 static char *read_all(const char *path) {
@@ -233,6 +233,7 @@ static ToolSet load_tools(const char *dir) {
         if (sr_cap_parse(conf, &cap) == 0 && cap.name[0]) {
             Tool t; t.name = strdup(cap.name); t.does = strdup(cap.does[0] ? cap.does : "(no description)");
             char dp[1200]; snprintf(dp, sizeof dp, "%s/%s", dir, de->d_name); t.dir = strdup(dp);
+            t.cap = cap;
             Tool *nt = (Tool *)realloc(ts.t, (size_t)(ts.n + 1) * sizeof(Tool));
             if (nt && t.name && t.does && t.dir) { ts.t = nt; ts.t[ts.n++] = t; }
             else { free(t.name); free(t.does); free(t.dir); free(nt); }
@@ -261,8 +262,49 @@ static const char *errname(int rc) {
         default: return "error";
     }
 }
+/* 是否布尔类型的参数声明 */
+static int is_bool_type(const char *t) { return t && (strcmp(t, "bool") == 0 || strcmp(t, "boolean") == 0); }
+/* 是否字符串类型的参数声明 */
+static int is_string_type(const char *t) { return t && (strcmp(t, "string") == 0 || strcmp(t, "str") == 0); }
+
+/* 把 JSON 参数值转成 VM 用的 i64；成功 0。
+ * -1 缺失（含 null），-2 超出 i64 范围，-3 类型不符（int 要求整值 / bool 要求布尔）。 */
+static int jv_to_i64(JV *v, int is_bool, int64_t *out) {
+    if (!v || v->k == J_NULL || !out) return -1;
+    if (is_bool) {
+        if (v->k == J_BOOL) { *out = v->b ? 1 : 0; return 0; }
+        if (v->k == J_NUM && (v->num == 0.0 || v->num == 1.0)) { *out = (int64_t)v->num; return 0; }
+        return -3;
+    }
+    if (v->k == J_BOOL) { *out = v->b ? 1 : 0; return 0; }  /* 宽松：布尔当 0/1 */
+    if (v->k != J_NUM) return -3;
+    double d = v->num;
+    if (!(d >= -9223372036854775808.0 && d < 9223372036854775808.0)) return -2;
+    int64_t iv = (int64_t)d;
+    if ((double)iv != d) return -3;
+    *out = iv;
+    return 0;
+}
+
+/* 按 params 声明生成 MCP inputSchema（integer / boolean；全部 required）。 */
+static void emit_input_schema(SB *o, const SrCap *cap) {
+    sbz(o, "{\"type\":\"object\",\"properties\":{");
+    for (int i = 0; i < cap->params_count; i++) {
+        if (i) sbz(o, ",");
+        jesc(o, cap->params[i].name);
+        sbz(o, is_string_type(cap->params[i].type) ? ":{\"type\":\"string\"}" : (is_bool_type(cap->params[i].type) ? ":{\"type\":\"boolean\"}" : ":{\"type\":\"integer\"}"));
+    }
+    sbz(o, "}");
+    if (cap->params_count > 0) {
+        sbz(o, ",\"required\":[");
+        for (int i = 0; i < cap->params_count; i++) { if (i) sbz(o, ","); jesc(o, cap->params[i].name); }
+        sbz(o, "]");
+    }
+    sbz(o, ",\"additionalProperties\":false}");
+}
+
 /* 运行一个 tool；成功返回 0 并写 *res；失败返回负码并把消息写进 errbuf */
-static int run_tool(Tool *t, int64_t *res, char *errbuf, size_t errcap) {
+static int run_tool(Tool *t, JV *arguments, int64_t *res, char *errbuf, size_t errcap) {
     char cp[1300], jp[1300];
     snprintf(cp, sizeof cp, "%s/capability.conf", t->dir);
     char *conf = read_all(cp); if (!conf) { snprintf(errbuf, errcap, "cannot read capability.conf"); return -1; }
@@ -286,7 +328,41 @@ static int run_tool(Tool *t, int64_t *res, char *errbuf, size_t errcap) {
     jinvia_set_limits(rt, 10000000ULL, 4096, 256);
     int rc = jinvia_load(rt, conf, jcb, jl);
     if (rc != JINVIA_OK) { snprintf(errbuf, errcap, "%s", errname(rc)); jinvia_free(rt); goto done; }
-    rc = jinvia_call(rt, res);
+
+    /* 从 JSON arguments 按 params 声明顺序构造 VM 参数向量：
+     *   int/bool -> 1 个 i64 槽；string -> 2 个槽（ptr, len，字节写入线性内存）。 */
+    int64_t argv[SR_PARAMS_MAX * 2];
+    uint32_t nargs = 0;
+    uint32_t mem_off = 0, msize = jinvia_mem_size(rt);
+    for (int i = 0; i < cap.params_count; i++) {
+        const char *pn = cap.params[i].name;
+        const char *pt = cap.params[i].type;
+        JV *pv = jget(arguments, pn);
+        if (is_string_type(pt)) {
+            if (!pv || pv->k == J_NULL) { snprintf(errbuf, errcap, "missing required argument '%s'", pn); jinvia_free(rt); goto done; }
+            if (pv->k != J_STR) { snprintf(errbuf, errcap, "argument '%s' must be a string", pn); jinvia_free(rt); goto done; }
+            const char *str = pv->str ? pv->str : "";
+            size_t slen = strlen(str);
+            if (msize == 0) { snprintf(errbuf, errcap, "string argument '%s' needs the tool to declare linear memory (.memory N)", pn); jinvia_free(rt); goto done; }
+            uint32_t off = (mem_off + 7u) & ~7u;
+            if ((uint64_t)off + (uint64_t)slen + 1u > (uint64_t)msize) { snprintf(errbuf, errcap, "string argument '%s' exceeds the tool's linear memory", pn); jinvia_free(rt); goto done; }
+            if (jinvia_mem_write(rt, off, str, (uint32_t)slen) != 0) { snprintf(errbuf, errcap, "failed to inject string argument '%s'", pn); jinvia_free(rt); goto done; }
+            { uint8_t nul = 0; jinvia_mem_write(rt, off + (uint32_t)slen, &nul, 1); }
+            argv[nargs++] = (int64_t)off;
+            argv[nargs++] = (int64_t)slen;
+            mem_off = off + (uint32_t)slen + 1u;
+        } else {
+            int conv = jv_to_i64(pv, is_bool_type(pt), &argv[nargs]);
+            if (conv == -1) { snprintf(errbuf, errcap, "missing required argument '%s'", pn); jinvia_free(rt); goto done; }
+            if (conv == -2) { snprintf(errbuf, errcap, "argument '%s' out of range", pn); jinvia_free(rt); goto done; }
+            if (conv == -3) { snprintf(errbuf, errcap, "argument '%s' must be %s", pn, is_bool_type(pt) ? "a boolean" : "an integer"); jinvia_free(rt); goto done; }
+            nargs++;
+        }
+    }
+    { int expect = jinvia_entry_nparams(rt);
+      if (expect != (int)nargs) { snprintf(errbuf, errcap, "tool params occupy %u VM slot(s) but the entry function expects %d", nargs, expect); jinvia_free(rt); goto done; } }
+
+    rc = jinvia_call_args(rt, argv, nargs, res);
     if (rc != JINVIA_OK) { snprintf(errbuf, errcap, "%s", errname(rc)); jinvia_free(rt); goto done; }
     jinvia_free(rt);
     ret = 0;
@@ -330,7 +406,7 @@ static void handle_request(const char *tools_dir, JV *req, FILE *out) {
             if (i) sbz(&o, ",");
             sbz(&o, "{\"name\":"); jesc(&o, ts.t[i].name);
             sbz(&o, ",\"description\":"); jesc(&o, ts.t[i].does);
-            sbz(&o, ",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}");
+            sbz(&o, ",\"inputSchema\":"); emit_input_schema(&o, &ts.t[i].cap); sbz(&o, "}");
         }
         sbz(&o, "]}}\n");
         fwrite(o.p, 1, o.n, out); fflush(out); sbfree(&o); toolset_free(&ts);
@@ -340,12 +416,13 @@ static void handle_request(const char *tools_dir, JV *req, FILE *out) {
         JV *params = jget(req, "params");
         const char *name = params ? jget_str(params, "name") : NULL;
         if (!name) { emit_error(out, idv, -32602, "missing tool name"); return; }
+        JV *arguments = params ? jget(params, "arguments") : NULL;
         ToolSet ts = load_tools(tools_dir);
         Tool *hit = NULL;
         for (int i = 0; i < ts.n; i++) if (!strcmp(ts.t[i].name, name)) { hit = &ts.t[i]; break; }
         if (!hit) { emit_error(out, idv, -32602, "unknown tool"); toolset_free(&ts); return; }
         int64_t res = 0; char eb[256] = {0};
-        int rc = run_tool(hit, &res, eb, sizeof eb);
+        int rc = run_tool(hit, arguments, &res, eb, sizeof eb);
         SB o; memset(&o, 0, sizeof o);
         sbz(&o, "{\"jsonrpc\":\"2.0\",\"id\":"); jemit(&o, idv); sbz(&o, ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":");
         if (rc == 0) { char txt[64]; snprintf(txt, sizeof txt, "result = %lld", (long long)res); jesc(&o, txt); }

@@ -1,0 +1,32 @@
+
+.const 0
+.const 1
+.memory 1
+.function 2 2 strlen
+PUSH_C 0
+LSET 2        ; i = 0  (locals start at slot2)
+PUSH_C 0
+LSET 3        ; cnt = 0
+loop:
+LGET 2
+LGET 1
+LT
+JZ done
+LGET 0
+LGET 2
+ADD
+MEM_LOAD8
+JZ done
+LGET 3
+PUSH_C 1
+ADD
+LSET 3
+LGET 2
+PUSH_C 1
+ADD
+LSET 2
+JMP loop
+done:
+LGET 3
+RET
+.end

@@ -62,6 +62,37 @@ int main(void) {
         ck(sr_cap_needs_satisfied(&n, gr, 1) == 1, "no needs -> 1", __LINE__);
     }
 
+    /* 9) params 解析：name 与 name:type */
+    {
+        SrCap p;
+        ck(sr_cap_parse("name: add\nparams: a, b, flag:bool\n", &p) == 0, "parse params ok", __LINE__);
+        ck(p.params_count == 3, "params count 3", __LINE__);
+        ck(strcmp(p.params[0].name, "a") == 0 && strcmp(p.params[0].type, "int") == 0, "param a int", __LINE__);
+        ck(strcmp(p.params[1].name, "b") == 0 && strcmp(p.params[1].type, "int") == 0, "param b int", __LINE__);
+        ck(strcmp(p.params[2].name, "flag") == 0 && strcmp(p.params[2].type, "bool") == 0, "param flag bool", __LINE__);
+    }
+    /* 10) 无 params -> count 0 */
+    {
+        SrCap q;
+        ck(sr_cap_parse("name: x\n", &q) == 0 && q.params_count == 0, "no params -> 0", __LINE__);
+    }
+    /* 11) params 里的空格/冒号间距容错 */
+    {
+        SrCap w;
+        ck(sr_cap_parse("name: y\nparams:  a : int ,  b\n", &w) == 0 &&
+           w.params_count == 2 && strcmp(w.params[0].name,"a")==0 && strcmp(w.params[0].type,"int")==0 &&
+           strcmp(w.params[1].name,"b")==0, "params whitespace/colon tolerant", __LINE__);
+    }
+
+    /* 12) params 字符串类型 */
+    {
+        SrCap sv;
+        ck(sr_cap_parse("name: strlen\nparams: s:string, n:int\n", &sv) == 0, "parse string param", __LINE__);
+        ck(sv.params_count == 2, "string params count 2", __LINE__);
+        ck(strcmp(sv.params[0].name,"s")==0 && strcmp(sv.params[0].type,"string")==0, "param s string", __LINE__);
+        ck(strcmp(sv.params[1].name,"n")==0 && strcmp(sv.params[1].type,"int")==0, "param n int", __LINE__);
+    }
+
     if (fails == 0) { printf("ALL TESTS PASSED\n"); return 0; }
     printf("%d TEST(S) FAILED\n", fails);
     return 1;

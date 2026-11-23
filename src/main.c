@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
         if (rc != J_OK) { fprintf(stderr, "汇编失败: %s\n", err_name(rc)); return 1; }
         FILE *f = fopen(argv[3], "wb"); if (!f) { free(out); fprintf(stderr, "写不了: %s\n", argv[3]); return 1; }
         fwrite(out, 1, outlen, f); fclose(f); free(out);
-        printf("已汇编 %s -> %s (%zu 字节)\n", argv[2], argv[3], outlen); return 0;
+        printf("已汇编 %s -> %s (%llu 字节)\n", argv[2], argv[3], (unsigned long long)outlen); return 0;
     }
     if (argc >= 2 && strcmp(argv[1], "dis") == 0) {
         if (argc < 3) { fprintf(stderr, "用法: jinvia dis <file.jcb>\n"); return 2; }

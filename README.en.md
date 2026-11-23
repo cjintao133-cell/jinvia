@@ -24,7 +24,7 @@ Jinvia pours the **bottom layer of that same floor**:
 - **Tiny sandbox** — default-deny + resource budgets + bounds checks; malicious bytecode is stopped on the spot (see *Sandbox showdown*).
 - **Isomorphic** — the same capability package runs unchanged from a chip to a server.
 
-> Jinvia **ships a minimal MCP stdio server** (`jinvia mcp <tools-dir>`): every capability package is an MCP tool, and `tools/call` runs it inside the sandbox, default-deny. See [`docs/mcp.md`](docs/mcp.md). Still on the roadmap: HTTP transport, resources/prompts, auth, argument passing.
+> Jinvia **ships a minimal MCP stdio server** (`jinvia mcp <tools-dir>`): every capability package is an MCP tool, and `tools/call` runs it inside the sandbox, default-deny. See [`docs/mcp.md`](docs/mcp.md). Tool argument passing is supported: declare `params` in `capability.conf`, and `tools/list` emits a typed (`int`/`bool`/`string`) `inputSchema`; `tools/call` maps `arguments` by name into the VM (strings via linear-memory `ptr`+`len`). Still on the roadmap: HTTP transport, resources/prompts, auth, optional params / structured results.
 
 ## Performance & footprint
 

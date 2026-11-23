@@ -82,6 +82,38 @@ int main(void){
         int64_t rr; ck(jinvia_call(rt, &rr) == JINVIA_ERR_NOLOAD, "call after failed load -> NOLOAD", __LINE__);
         jinvia_free(rt);
     }
+    /* call_args：examples/add 带两个参数；形参个数/空参防御 */
+    {
+        char conf[8192]; static unsigned char jcb[1<<20]; size_t cl,jl; FILE*f;
+        f=fopen("examples/add/capability.conf","rb"); cl=fread(conf,1,sizeof(conf)-1,f); fclose(f); conf[cl]='\0';
+        f=fopen("examples/add/main.jcb","rb"); jl=fread(jcb,1,sizeof(jcb),f); fclose(f);
+        JinviaRuntime*rt=jinvia_new();
+        ck(jinvia_load(rt,conf,jcb,jl)==JINVIA_OK,"add load",__LINE__);
+        ck(jinvia_entry_nparams(rt)==2,"add entry nparams 2",__LINE__);
+        int64_t a[2]={7,5}; int64_t rr=0;
+        ck(jinvia_call_args(rt,a,2,&rr)==J_OK && rr==12,"add call_args 7+5=12",__LINE__);
+        int64_t wrong[1]={1};
+        ck(jinvia_call_args(rt,wrong,1,&rr)==J_ERR_FMT,"add wrong nargs -> FMT",__LINE__);
+        ck(jinvia_call_args(rt,NULL,2,&rr)==JINVIA_ERR_NULL,"null args -> NULL",__LINE__);
+        jinvia_free(rt);
+    }
+    /* 线性内存 API + 字符串参数端到端（strlen 工具） */
+    {
+        char conf[8192]; static unsigned char jcb[1<<20]; size_t cl,jl; FILE*f;
+        f=fopen("examples/strlen/capability.conf","rb"); cl=fread(conf,1,sizeof(conf)-1,f); fclose(f); conf[cl]='\0';
+        f=fopen("examples/strlen/main.jcb","rb"); jl=fread(jcb,1,sizeof(jcb),f); fclose(f);
+        JinviaRuntime*rt=jinvia_new();
+        ck(jinvia_load(rt,conf,jcb,jl)==JINVIA_OK,"strlen load",__LINE__);
+        uint32_t ms = jinvia_mem_size(rt);
+        ck(ms == 4096, "strlen mem_size 4096", __LINE__);
+        const char *str = "hello";
+        ck(jinvia_mem_write(rt, 0, str, 5) == 0, "mem_write ok", __LINE__);
+        { uint8_t nul=0; jinvia_mem_write(rt, 5, &nul, 1); }
+        int64_t a[2]={0,5}; int64_t rr=0;
+        ck(jinvia_call_args(rt,a,2,&rr)==J_OK && rr==5,"strlen via mem => 5",__LINE__);
+        ck(jinvia_mem_write(rt, ms, str, 5) != 0, "mem_write OOB -> error", __LINE__);
+        jinvia_free(rt);
+    }
     if(fails==0){printf("ALL TESTS PASSED\n");return 0;}
     printf("%d TEST(S) FAILED\n",fails);return 1;
 }

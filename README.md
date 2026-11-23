@@ -31,7 +31,7 @@ Jinvia 补的是同一块地板里**最底下那一层**：
 - **极小沙箱**：默认拒绝 + 资源预算 + 边界检查，恶意字节码当场被拦（见下方「沙箱对抗」）。
 - **同构**：同一份能力包，从一块芯片到一台服务器跑的是同一套字节码。
 
-> Jinvia 现在**自带一个最小 MCP stdio 服务器**（`jinvia mcp <工具目录>`）：每个能力包 = 一个 MCP tool，`tools/call` 时在沙箱里跑、默认拒绝。见 [`docs/mcp.md`](docs/mcp.md)。仍在 roadmap：HTTP transport、resources/prompts、鉴权、参数传递。
+> Jinvia 现在**自带一个最小 MCP stdio 服务器**（`jinvia mcp <工具目录>`）：每个能力包 = 一个 MCP tool，`tools/call` 时在沙箱里跑、默认拒绝。见 [`docs/mcp.md`](docs/mcp.md)。工具参数传递已支持：`capability.conf` 用 `params` 声明，`tools/list` 自动生成带类型（int/bool/string）的 `inputSchema`，`tools/call` 的 `arguments` 按名映射进 VM（string 经线性内存 ptr+len 传入）。仍在 roadmap：HTTP transport、resources/prompts、鉴权、可选参数/结构化结果。
 
 ---
 

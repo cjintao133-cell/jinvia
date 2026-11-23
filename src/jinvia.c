@@ -114,10 +114,30 @@ int jinvia_load(JinviaRuntime *rt, const char *conf_text, const uint8_t *jcb, si
     return JINVIA_OK;
 }
 
-int jinvia_call(JinviaRuntime *rt, int64_t *result) {
+int jinvia_call_args(JinviaRuntime *rt, const int64_t *args, uint32_t nargs, int64_t *result) {
     if (!rt) return JINVIA_ERR_NULL;
     if (!rt->loaded || !rt->vm) return JINVIA_ERR_NOLOAD;
-    return j_vm_call(rt->vm, rt->entry, NULL, 0, result);
+    if (!result) return JINVIA_ERR_NULL;
+    if (nargs && !args) return JINVIA_ERR_NULL;
+    return j_vm_call(rt->vm, rt->entry, args, nargs, result);
+}
+
+int jinvia_call(JinviaRuntime *rt, int64_t *result) {
+    return jinvia_call_args(rt, NULL, 0, result);
+}
+
+int jinvia_entry_nparams(JinviaRuntime *rt) {
+    if (!rt || !rt->loaded || !rt->vm) return -1;
+    if (rt->entry >= rt->mod.nfuncs) return -1;
+    return (int)rt->mod.funcs[rt->entry].nparams;
+}
+uint32_t jinvia_mem_size(JinviaRuntime *rt) {
+    if (!rt || !rt->loaded || !rt->vm) return 0;
+    return j_vm_mem_size(rt->vm);
+}
+int jinvia_mem_write(JinviaRuntime *rt, uint32_t off, const void *src, uint32_t len) {
+    if (!rt || !rt->loaded || !rt->vm) return JINVIA_ERR_NOLOAD;
+    return j_vm_mem_write(rt->vm, off, src, len);
 }
 
 const char *jinvia_cap_name(JinviaRuntime *rt) {

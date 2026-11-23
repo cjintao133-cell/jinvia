@@ -96,6 +96,51 @@ int main(void){
     ck(c && strstr(c,"\"result\":{}")!=NULL,"no-trailing-newline handled");
     free(c);
 
+    /* ---------- D. MCP 工具参数传递（inputSchema + arguments -> VM） ---------- */
+    const char *D =
+        "{\"jsonrpc\":\"2.0\",\"id\":20,\"method\":\"tools/list\"}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":21,\"method\":\"tools/call\",\"params\":{\"name\":\"add\",\"arguments\":{\"a\":2,\"b\":3}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":22,\"method\":\"tools/call\",\"params\":{\"name\":\"add\",\"arguments\":{\"a\":2}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":23,\"method\":\"tools/call\",\"params\":{\"name\":\"add\",\"arguments\":{\"a\":\"x\",\"b\":3}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":24,\"method\":\"tools/call\",\"params\":{\"name\":\"add\",\"arguments\":{\"a\":2.5,\"b\":3}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":25,\"method\":\"tools/call\",\"params\":{\"name\":\"scale\",\"arguments\":{\"value\":5,\"double_it\":true}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":26,\"method\":\"tools/call\",\"params\":{\"name\":\"scale\",\"arguments\":{\"value\":5,\"double_it\":false}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":27,\"method\":\"tools/call\",\"params\":{\"name\":\"scale\",\"arguments\":{\"value\":5}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":28,\"method\":\"tools/call\",\"params\":{\"name\":\"add\",\"arguments\":{\"a\":9,\"b\":9}}}\n";
+    char *d=serve(D);
+    ck(d!=NULL,"D output");
+    if(d){
+        ck(strstr(d,"\"required\":[\"a\",\"b\"]")!=NULL,"add schema required a,b");
+        ck(strstr(d,"\"double_it\":{\"type\":\"boolean\"}")!=NULL,"scale schema bool param");
+        ck(strstr(d,"result = 5")!=NULL,"add 2+3 => 5");
+        ck(strstr(d,"result = 18")!=NULL,"add 9+9 => 18");
+        ck(strstr(d,"missing required argument 'b'")!=NULL,"add missing b -> error");
+        ck(strstr(d,"must be an integer")!=NULL,"string/fractional -> integer error");
+        ck(strstr(d,"result = 10")!=NULL,"scale true => 10");
+        ck(strstr(d,"missing required argument 'double_it'")!=NULL,"scale missing bool -> error");
+        ck(strstr(d,"\"isError\":true")!=NULL,"arg errors set isError");
+        free(d);
+    }
+
+    /* ---------- E. 字符串参数（经线性内存 ptr+len 传入） ---------- */
+    const char *E =
+        "{\"jsonrpc\":\"2.0\",\"id\":30,\"method\":\"tools/list\"}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":31,\"method\":\"tools/call\",\"params\":{\"name\":\"strlen\",\"arguments\":{\"s\":\"hello\"}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":32,\"method\":\"tools/call\",\"params\":{\"name\":\"strlen\",\"arguments\":{\"s\":\"\"}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":33,\"method\":\"tools/call\",\"params\":{\"name\":\"strlen\",\"arguments\":{\"s\":\"h\xc3\xa9llo\xf0\x9f\x8c\x8d\"}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":34,\"method\":\"tools/call\",\"params\":{\"name\":\"strlen\",\"arguments\":{}}}\n"
+        "{\"jsonrpc\":\"2.0\",\"id\":35,\"method\":\"tools/call\",\"params\":{\"name\":\"strlen\",\"arguments\":{\"s\":123}}}\n";
+    char *e=serve(E);
+    ck(e!=NULL,"E output");
+    if(e){
+        ck(strstr(e,"\"s\":{\"type\":\"string\"}")!=NULL,"strlen schema string param");
+        ck(strstr(e,"result = 5")!=NULL,"strlen hello => 5");
+        ck(strstr(e,"result = 10")!=NULL,"strlen utf8 bytes => 10");
+        ck(strstr(e,"missing required argument 's'")!=NULL,"strlen missing s -> error");
+        ck(strstr(e,"argument 's' must be a string")!=NULL,"strlen non-string -> error");
+        free(e);
+    }
+
     if(fails){ printf("test_mcp: %d FAIL\n",fails); return 1; }
     printf("test_mcp: ALL PASS\n");
     return 0;

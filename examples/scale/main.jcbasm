@@ -1,0 +1,13 @@
+; scale: value * (double_it ? 2 : 1)
+.const 2
+.function 2 0 scale
+LGET 1
+JZ no
+LGET 0
+PUSH_C 0
+MUL
+RET
+no:
+LGET 0
+RET
+.end

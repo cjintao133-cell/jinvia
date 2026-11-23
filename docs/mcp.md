@@ -49,6 +49,47 @@ Example (`sum-1-to-10`):
 ← {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"result = 55"}],"isError":false}}
 ```
 
+## Tool arguments (typed `inputSchema`)
+
+Tools can take parameters. Declare them in `capability.conf`:
+
+```
+name: add
+does: add two integers a + b
+params: a, b           # a and b are integers (default type: int)
+entry: main.jcb
+```
+
+`params` is comma-separated; each item is `name` (integer) or `name:type` where `type` is `int`, `bool`, or `string`. `tools/list` emits a real `inputSchema`:
+
+```json
+"inputSchema":{"type":"object","properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"],"additionalProperties":false}
+```
+
+`tools/call` maps the JSON `arguments` object to the VM by parameter name, in declaration order, and passes them straight into `j_vm_call`. All declared parameters are **required**; a missing / wrong-typed / out-of-range argument returns `isError:true` with a precise message (e.g. `missing required argument 'b'`, `argument 'a' must be an integer`). Values are still boxed as i64 inside the sandbox — a `bool` accepts `true/false` (or `0/1`).
+
+How arguments map onto the VM (all values are i64 inside the sandbox):
+
+- `int` → one i64 (must be an integer value; bools coerced to 0/1).
+- `bool` → one i64 (accepts `true`/`false` or `0`/`1`).
+- `string` → **two** i64 slots: `ptr` then `len`. The UTF-8 bytes are copied into the tool's **linear memory** (plus a trailing NUL), and the tool reads them with `MEM_LOAD8 ptr+i`. A `string` parameter therefore requires the capability to declare `.memory N`; otherwise the call fails with a clear error.
+
+So the entry function's parameter count is the sum of slot widths (a `string` counts as 2). e.g. `params: s:string` → entry takes `(ptr, len)`. All declared parameters are **required**; a missing / wrong-typed / out-of-range argument returns `isError:true` with a precise message.
+
+Example (`examples/add`, a+b):
+
+```
+→ {"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"add","arguments":{"a":2,"b":3}}}
+← {"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"result = 5"}],"isError":false}}
+```
+
+Example (`examples/strlen`, string argument → byte length):
+
+```
+→ {"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"strlen","arguments":{"s":"hello"}}}
+← {"jsonrpc":"2.0","id":6,"result":{"content":[{"type":"text","text":"result = 5"}],"isError":false}}
+```
+
 ## Why this is different
 
 Conventional MCP servers are **native binaries on the host** — an untrusted MCP tool runs with the host's full privileges. Jinvia runs the tool as *bytecode in a sandbox*: it can't touch the host except through the exact host callbacks the host registered, and it can't hang the host (step/stack/frame budgets). That is the security story Microsoft's Wassette tells with Wasmtime + Rust; Jinvia tells it in **pure C, no runtime, small enough for constrained targets.**
@@ -62,5 +103,6 @@ Conventional MCP servers are **native binaries on the host** — an untrusted MC
 ## Status / roadmap (honest)
 
 - ✅ stdio transport, `tools/list` + `tools/call`, default-deny.
-- ⏳ Roadmap: HTTP/SSE transport, MCP **resources** & **prompts**, auth, per-tool host-capability policies, argument passing (tools currently take no args; the JCB entry is no-arg).
+- ✅ Tool arguments: `params` in `capability.conf` → typed `inputSchema`; `arguments` mapped by name into `j_vm_call` (**int / bool / string**; string via linear-memory `ptr`+`len`; all required).
+- ⏳ Roadmap: HTTP/SSE transport, MCP **resources** & **prompts**, auth, per-tool host-capability policies, optional/default parameters, structured/string results (result is currently a single i64).
 - ⚠️ **Not externally audited.** The JSON parser is minimal (no depth limit yet — treat long adversarial input with care).

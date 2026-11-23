@@ -17,6 +17,8 @@ All notable changes to this project are documented here. Format based on [Keep a
 ## [Unreleased]
 
 ### Added
+- **MCP tool arguments**: `capability.conf` now accepts `params: a, b` (or `name:bool` / `name:string`); `tools/list` emits a typed `inputSchema` (integer/boolean/string, all required), and `tools/call` maps the JSON `arguments` by name into `j_vm_call`. `string` params are copied into the tool's linear memory and passed as `(ptr,len)` (requires `.memory N`). New `jinvia_call_args` / `jinvia_entry_nparams` / `jinvia_mem_size` / `jinvia_mem_write` API. Example tools `examples/add` (a+b), `examples/scale` (bool), `examples/strlen` (string).
+- Fixed Windows/MinGW `-Werror` build: replaced non-portable `%zu` with `%llu` + cast in `jcb_cc.c` / `main.c` (MinGW CRT lacks `%zu`).
 - Expanded MCP tests (JSON escapes, surrogate pairs, nested args, error paths) and C-compiler negative tests; MCP JSON layer coverage 57%->76%.
 - README badge set (CI, license, C11, 0-deps, coverage, throughput, release, platforms, MCP, PRs); prepared OpenSSF Scorecard + CodeQL workflows under `docs/publish/`.
 - **MCP stdio server** (`jinvia mcp <tools-dir>`): exposes capability packages as MCP tools; `tools/call` runs untrusted bytecode inside the sandbox with default-deny. Methods: initialize / tools/list / tools/call / ping. Self-contained JSON parser (zero deps). Docs: `docs/mcp.md`.

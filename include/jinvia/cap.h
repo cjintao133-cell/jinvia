@@ -4,13 +4,23 @@
 
 /* Jinvia capability.conf parser — pure C11, no third-party deps, no malloc.
  * 格式：一行一条 "key: value"；# 开头为注释；空行忽略。
- * needs 用逗号分隔。成功返回 0，NULL 或缺 name 返回 -1。 */
+ * needs 用逗号分隔。params 也逗号分隔，每项 name 或 name:type（type：int|bool，缺省 int）。
+ * 成功返回 0，NULL 或缺 name 返回 -1。 */
 
 #define SR_NAME_MAX  128
 #define SR_DOES_MAX  512
 #define SR_ENTRY_MAX 256
 #define SR_NEEDS_MAX 16
 #define SR_NEED_LEN  64
+#define SR_PARAMS_MAX 16
+#define SR_PARAM_LEN  64
+#define SR_PARAM_TYPE_LEN 16
+
+/* MCP 工具参数声明（params: 行；每项 name 或 name:type；type 缺省 int） */
+typedef struct {
+    char name[SR_PARAM_LEN];
+    char type[SR_PARAM_TYPE_LEN];
+} SrParam;
 
 typedef struct {
     char name[SR_NAME_MAX];
@@ -18,6 +28,8 @@ typedef struct {
     char entry[SR_ENTRY_MAX];
     char needs[SR_NEEDS_MAX][SR_NEED_LEN];
     int  needs_count;
+    SrParam params[SR_PARAMS_MAX];
+    int     params_count;
 } SrCap;
 
 int sr_cap_parse(const char *text, SrCap *out);

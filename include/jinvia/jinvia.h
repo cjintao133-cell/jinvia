@@ -45,6 +45,15 @@ int  jinvia_set_limits(JinviaRuntime *rt, uint64_t max_steps, uint32_t max_stack
 int  jinvia_load(JinviaRuntime *rt, const char *conf_text, const uint8_t *jcb, size_t jcb_len);
 /* 调用已加载能力的入口（无参），结果写入 *result。 */
 int  jinvia_call(JinviaRuntime *rt, int64_t *result);
+/* 带参数调用入口：args/nargs 逐字节为 i64（对应能力的 params 声明顺序）。
+ * nargs 必须等于入口函数的形参个数，否则返回 J_ERR_FMT。 */
+int  jinvia_call_args(JinviaRuntime *rt, const int64_t *args, uint32_t nargs, int64_t *result);
+/* 查询已加载能力入口函数的形参个数；未加载返回 -1。 */
+int  jinvia_entry_nparams(JinviaRuntime *rt);
+/* 已加载能力的线性内存：查询字节大小 / 在调用前写入若干字节（供字符串参数注入）。
+ * 越界或未加载返回 -1。 */
+uint32_t jinvia_mem_size(JinviaRuntime *rt);
+int      jinvia_mem_write(JinviaRuntime *rt, uint32_t off, const void *src, uint32_t len);
 
 /* 只读查询（便于宿主/测试） */
 const char *jinvia_cap_name(JinviaRuntime *rt);   /* 已加载能力名，未加载返回 NULL */

@@ -123,11 +123,11 @@ static int lex_source(const char *src, Arena *a, TokVec *tv, char *err, size_t e
             if (ch == '0' && (src[i + 1] == 'x' || src[i + 1] == 'X')) { base = 16; i += 2; while (isxdigit((unsigned char)src[i])) i++; }
             else { while (isdigit((unsigned char)src[i])) i++; }
             char buf[80]; size_t L = i - st;
-            if (L == 0 || L >= sizeof buf) { snprintf(err, errcap, "数字字面量过长(位置 %zu)", st); return -1; }
+            if (L == 0 || L >= sizeof buf) { snprintf(err, errcap, "数字字面量过长(位置 %llu)", (unsigned long long)st); return -1; }
             memcpy(buf, src + st, L); buf[L] = '\0';
             char *endp = NULL;
             long long v = strtoll(buf, &endp, base);
-            if (endp && *endp) { snprintf(err, errcap, "非法数字 '%s'(位置 %zu)", buf, st); return -1; }
+            if (endp && *endp) { snprintf(err, errcap, "非法数字 '%s'(位置 %llu)", buf, (unsigned long long)st); return -1; }
             tk.t = T_NUM; tk.num = (int64_t)v;
             if (tv_push(tv, tk)) { snprintf(err, errcap, "内存不足"); return -1; }
             continue;
@@ -136,7 +136,7 @@ static int lex_source(const char *src, Arena *a, TokVec *tv, char *err, size_t e
             size_t st = i;
             while (isalnum((unsigned char)src[i]) || src[i] == '_') i++;
             size_t L = i - st;
-            if (L >= 200) { snprintf(err, errcap, "标识符过长(位置 %zu)", st); return -1; }
+            if (L >= 200) { snprintf(err, errcap, "标识符过长(位置 %llu)", (unsigned long long)st); return -1; }
             char buf[200]; memcpy(buf, src + st, L); buf[L] = '\0';
             TokType kw;
             if (keyword(buf, &kw)) { tk.t = kw; }
@@ -169,7 +169,7 @@ static int lex_source(const char *src, Arena *a, TokVec *tv, char *err, size_t e
                 case '>': tk.t = T_GT; break;
                 case '!': tk.t = T_BANG; break;
                 case '=': tk.t = T_ASSIGN; break;
-                default: snprintf(err, errcap, "无法识别的字符 '%c'(位置 %zu)", ch, i); return -1;
+                default: snprintf(err, errcap, "无法识别的字符 '%c'(位置 %llu)", ch, (unsigned long long)i); return -1;
             }
             i++;
         }
@@ -256,7 +256,7 @@ static Expr *parse_primary(P *p) {
         Expr *e = mk(p, E_VAR); if (!e) return NULL; e->name = name; return e;
     }
     if (tt == T_LPAREN) { adv(p); Expr *e = parse_expr(p); if (!e) return NULL; if (pk(p) != T_RPAREN) { p_err(p, "缺少 ')'"); return NULL; } adv(p); return e; }
-    p_err(p, "表达式中出现意外的记号(位置 %zu)", cur(p)->pos);
+    p_err(p, "表达式中出现意外的记号(位置 %llu)", (unsigned long long)cur(p)->pos);
     return NULL;
 }
 static Expr *parse_unary(P *p) {
