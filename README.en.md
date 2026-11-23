@@ -115,6 +115,9 @@ A capability whose `needs` are not all registered is refused with `JINVIA_ERR_NE
 
 Hard boundaries (implemented + tested): DoS budgets (steps/stack/frames) settable by the host; i64 add/sub/mul wrap with no UB; div/mod guard `y==0` and `INT64_MIN/-1` (no SIGFPE); parse/verify-time rejection of over-limit fields, duplicate sections, unknown opcodes, out-of-range indices.
 
+
+See [Security Policy SECURITY.md](SECURITY.md) for private reporting, scope and disclosure.
+
 ## Sandbox showdown: it tries to kill the host; the host doesn't blink
 
 `examples/sandbox-showdown/` has **7 malicious capabilities**: privilege escalation, host-index escape, divide-by-zero, `INT64_MIN/-1` (SIGFPE in a naive impl), out-of-bounds read, infinite loop, recursion bomb.
