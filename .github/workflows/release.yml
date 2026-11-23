@@ -8,28 +8,43 @@ on:
 permissions: read-all
 
 jobs:
-  package:
-    name: build & package
+  release:
+    name: build, sign (cosign), publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+      packages: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Build (bin + libs)
+      - name: Build
         run: make && make lib
-      - name: Package (tarball + checksums)
+      - name: Package
         run: |
           mkdir -p dist
           tar czf "dist/jinvia-${{ github.ref_name }}.tar.gz" \
-            jinvia build/libjinvia.a build/libjinvia.so include examples README.md README.en.md LICENSE SECURITY.md CHANGELOG.md
+            jinvia build/libjinvia.a build/libjinvia.so include examples \
+            README.md README.en.md LICENSE SECURITY.md CHANGELOG.md ROADMAP.md
           ( cd dist && sha256sum * > SHA256SUMS.txt )
-          ls -l dist
-      - name: Publish release (attach artifacts)
+      - name: Install cosign
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+      - name: Sign artifacts (keyless, OIDC)
+        run: |
+          cd dist
+          for f in *.tar.gz SHA256SUMS.txt; do
+            cosign sign-blob --yes --output-signature "$f.sig" --output-certificate "$f.pem" "$f"
+          done
+          ls -l
+      - name: Publish release with signatures
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: |
             dist/*.tar.gz
+            dist/*.tar.gz.sig
+            dist/*.tar.gz.pem
             dist/SHA256SUMS.txt
+            dist/SHA256SUMS.txt.sig
+            dist/SHA256SUMS.txt.pem
           name: Jinvia ${{ github.ref_name }}
           draft: false
           prerelease: false
