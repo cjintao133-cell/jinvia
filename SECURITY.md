@@ -1,33 +1,37 @@
 # Security Policy
 
-## Supported Versions
-
-| Version | Supported |
-| ------- | --------- |
-| 0.1.x   | :white_check_mark: |
-
 ## Reporting a Vulnerability
 
-Please **do not** open a public issue for a security bug. Report privately:
+Please **do not** open a public issue for security vulnerabilities.
 
-- GitHub: repo **Security** tab -> "Report a vulnerability" (private advisory), or
-- Email the maintainer (see the GitHub profile).
+Report privately through either channel:
 
-Please include a minimal reproducer (`.jcbasm`/`.c`/raw bytes), the exact command, and observed vs expected behavior.
+- **GitHub private security advisory (preferred):** https://github.com/cjintao133-cell/jinvia/security/advisories/new
+- **Email:** security@jinvia.dev
 
-## What counts as a security bug (scope)
+We aim to acknowledge within 7 days and to follow coordinated disclosure. Please include: affected version/commit, a description, and a minimal reproduction if possible.
 
-Jinvia runs untrusted bytecode; its whole purpose is containment. High-severity:
+Preferred-Languages: en, zh
+
+## Scope
+
+Jinvia executes untrusted bytecode; its purpose is containment. High-severity issues:
 
 - Memory-safety bugs letting bytecode read/write outside its linear memory or the host.
 - Sandbox escape: invoking host capabilities not declared/registered (default-deny must hold).
 - DoS not stopped by the configured budgets (steps/stack/frames).
 - Crashes (SIGFPE/SIGSEGV/abort) reachable from crafted bytecode.
 
-## Disclosure Policy
+## Current status (please read)
 
-We follow coordinated disclosure: acknowledge within a few days, aim to fix and credit reporters in release notes.
+This project is **0.1.x (alpha)** and **not yet externally security-audited**. It is fuzzed (multi-strategy + libFuzzer), sanitizer-clean (ASan/UBSan/Valgrind) and scanned by CodeQL, but awaits independent review. **Do not claim "production-grade" for security-critical deployments yet.**
 
-## Status
+## Supported Versions
 
-Fuzzed (multi-strategy + libFuzzer) and sanitizer-clean (ASan/UBSan/Valgrind); scanned by CodeQL. **Not yet externally audited** — treat as a work draft for security-critical deployments.
+| Version | Supported |
+| ------- | --------- |
+| 0.1.x (alpha) | :white_check_mark: (best effort) |
+
+## Disclosure
+
+We follow coordinated disclosure. Once a fix is available, we will credit reporters (unless you prefer to stay anonymous).
