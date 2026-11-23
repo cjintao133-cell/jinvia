@@ -104,6 +104,28 @@ int main(void) {
     expect_reject("reject_missing_semi", "int main(){ return 1 }", __LINE__);
     expect_reject("reject_extern_arity", "extern int f(int,int); int main(){ return 0; }", __LINE__);
 
+    /* --- 编译期拒绝：更多错误分支（健壮性 + 覆盖） --- */
+    const char *bad[] = {
+        "int main(){",
+        "int main(){ 1 = 2; }",
+        "int main(){ int x; x = ; }",
+        "int main(){ if 1 return 1; }",
+        "int main(){ while() return 1; }",
+        "int main(){ return 0x; }",
+        "int main(){ return @; }",
+        "int main(){ /* no end",
+        "int main(){ int 123; }",
+        "int main(){ foo( }",
+        "int main(){ return (1; }",
+        "int f(int a,){ return a; } int main(){ return 0; }",
+        "@ top",
+        "int g = x; int main(){ return 0; }",
+        "int main(){ return main(1); }",
+        "int main(){ return 1 }",
+        NULL
+    };
+    for (int i = 0; bad[i]; i++) expect_reject("reject_batch", bad[i], __LINE__);
+
     printf(fails ? "test_cc: %d FAIL\n" : "test_cc: ALL PASS\n", fails);
     return fails ? 1 : 0;
 }

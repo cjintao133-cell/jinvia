@@ -5,9 +5,16 @@
 
 [中文](README.md) · English
 
-![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)
-![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
-![C11 · zero deps](https://img.shields.io/badge/C11-zero%20dependencies-brightgreen.svg)
+[![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+![C11](https://img.shields.io/badge/C11-pure%20C-blue.svg)
+![Dependencies](https://img.shields.io/badge/third--party%20deps-0-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/coverage-80.7%25%20core-brightgreen.svg)
+![Throughput](https://img.shields.io/badge/throughput-~270%20MIPS-blue.svg)
+[![Release](https://img.shields.io/github/v/release/cjintao133-cell/jinvia?include_prereleases&sort=semver)](https://github.com/cjintao133-cell/jinvia/releases)
+![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20MCU-informational.svg)
+![MCP](https://img.shields.io/badge/MCP-stdio%20server-blueviolet.svg)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 ![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
 
@@ -160,6 +167,7 @@ The WASM spec surface is huge to implement correctly; one person can't easily ma
 - ✅ **4 real bugs found by fuzzing and fixed**: duplicate-section leak, `INT64_MIN/-1` SIGFPE, unbounded `nparams` stack overflow, `addr+8` unsigned-overflow OOB read.
 - ✅ **Source-level portability**: char signedness matrix, `-Wcast-align=strict` / `-Wshadow` clean.
 - ✅ **Ships a minimal MCP stdio server** (tools/list + tools/call, default-deny).
+- ✅ **Coverage**: core runtime (VM/loader/verifier/assembler — the layer that executes untrusted bytecode) **80.7%** (CI gate ≥80%); whole tree incl. C compiler + MCP JSON layer **75.5%**.
 - ⚠️ **No external security audit**; C subset has no arrays/pointers/float yet; MCP is stdio-only (no HTTP/resources/prompts yet).
 
 ## Directory

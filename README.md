@@ -1,6 +1,13 @@
-![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)
-![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
-![C11 · zero deps](https://img.shields.io/badge/C11-zero%20dependencies-brightgreen.svg)
+[![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+![C11](https://img.shields.io/badge/C11-pure%20C-blue.svg)
+![Dependencies](https://img.shields.io/badge/third--party%20deps-0-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/coverage-80.7%25%20core-brightgreen.svg)
+![Throughput](https://img.shields.io/badge/throughput-~270%20MIPS-blue.svg)
+[![Release](https://img.shields.io/github/v/release/cjintao133-cell/jinvia?include_prereleases&sort=semver)](https://github.com/cjintao133-cell/jinvia/releases)
+![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20MCU-informational.svg)
+![MCP](https://img.shields.io/badge/MCP-stdio%20server-blueviolet.svg)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 ![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
 
@@ -204,6 +211,7 @@ WASM 生态最大，但对这个项目是负担：完整实现 WASM 规范面太
   libFuzzer 覆盖率引导（解析器 + 汇编器两路），CLI 端到端。四道门全绿。
 - ✅ **已修的 4 个真安全洞**：重复区段内存泄漏、`INT64_MIN/-1` 触发 SIGFPE 崩进程、`nparams` 无上限致栈越界、内存越界检查的 `addr+8` 无符号溢出（负地址可绕过 → 越界读）。
 - ✅ **源级可移植**：字符符号性矩阵（x86 有符号 / ARM 无符号）双过、`-Wcast-align=strict` / `-Wshadow` 全干净。
+- ✅ **覆盖率**：核心运行时（VM/加载/校验/汇编，即执行不可信字节码的那层）**80.7%**（CI 硬门禁 ≥80%）；全树含 C 编译器与 MCP JSON 层 **75.5%**。
 - ⚠️ **真机跨架构未验证**：ARM / 32 位“实际跑通”需在有交叉工具链 + QEMU 的机器上跑 `portability.sh` 第 3 步。
 - ✅ **自带最小 MCP stdio 服务器**（tools/list+tools/call，默认拒绝）。
 - ⚠️ **未经外部安全审计**：这是工作草案，别当作“production-grade”宣称。

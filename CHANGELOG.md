@@ -5,6 +5,8 @@ All notable changes to this project are documented here. Format based on [Keep a
 ## [Unreleased]
 
 ### Added
+- Expanded MCP tests (JSON escapes, surrogate pairs, nested args, error paths) and C-compiler negative tests; MCP JSON layer coverage 57%->76%.
+- README badge set (CI, license, C11, 0-deps, coverage, throughput, release, platforms, MCP, PRs); prepared OpenSSF Scorecard + CodeQL workflows under `docs/publish/`.
 - **MCP stdio server** (`jinvia mcp <tools-dir>`): exposes capability packages as MCP tools; `tools/call` runs untrusted bytecode inside the sandbox with default-deny. Methods: initialize / tools/list / tools/call / ping. Self-contained JSON parser (zero deps). Docs: `docs/mcp.md`.
 - Pure-C **C-subset compiler** (`jinvia cc in.c out.jcbasm`): `int` globals/locals, functions/recursion, arithmetic, comparisons, `&& || !`, `if/else/while/return`, `extern int host(int)`. Tests: normal + ASan/UBSan + Valgrind.
 - `examples/cc/` — five runnable C programs (fib, gcd, primes, collatz, sensor-double).
