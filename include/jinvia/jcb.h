@@ -81,6 +81,7 @@ void j_vm_free(JVM *vm);
 void j_vm_set_host(JVM *vm, JHostFn fn, void *ud);
 JLimits j_vm_default_limits(void);
 void    j_vm_set_limits(JVM *vm, JLimits lim);   /* 宿主收紧资源预算；超容量自动钳制 */
+void    j_vm_set_time_budget(JVM *vm, uint64_t ms); /* 墙钟时间预算(毫秒,0=不限)，防单次调用卡死宿主；不影响 JLimits 布局 */
 /* 执行函数 func（参数 args/nargs），结果写入 *result。成功 J_OK。 */
 int  j_vm_call(JVM *vm, uint32_t func, const int64_t *args, uint32_t nargs, int64_t *result);
 /* 线性内存访问（供 MCP 参数注入等宿主侧使用）：返回字节大小 / 写入若干字节（越界返回 -1）。 */
