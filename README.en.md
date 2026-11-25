@@ -5,6 +5,8 @@
 
 [中文](README.md) · English
 
+[![cjintao133-cell/jinvia MCP server](https://glama.ai/mcp/servers/cjintao133-cell/jinvia/badges/score.svg)](https://glama.ai/mcp/servers/cjintao133-cell/jinvia)
+
 > ### TL;DR — a **zero-dependency execution sandbox for MCP tools / AI plugins**
 > Everyone else needs Rust / a WASM runtime / a container to run untrusted tools. **Jinvia needs one C compiler.**
 > Pure C11, zero third-party deps, default-deny capability sandbox, with a built-in MCP stdio server — contain untrusted third-party tools without dragging in a heavy toolchain.
