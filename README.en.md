@@ -5,6 +5,13 @@
 
 [中文](README.md) · English
 
+> ### TL;DR — a **zero-dependency execution sandbox for MCP tools / AI plugins**
+> Everyone else needs Rust / a WASM runtime / a container to run untrusted tools. **Jinvia needs one C compiler.**
+> Pure C11, zero third-party deps, default-deny capability sandbox, with a built-in MCP stdio server — contain untrusted third-party tools without dragging in a heavy toolchain.
+
+**Good fit**: teams that want to run MCP tools / AI-generated plugins safely **without adopting Rust/WASM/containers**; pure-C / embedded / no-OS / edge hosts (where WASM won't fit).
+**Not a fit (honest)**: running arbitrary **Python / JavaScript** — use WASM+QuickJS or a microVM (E2B/Modal) for that. Jinvia runs a restricted C subset compiled to **JCB bytecode**; it optimizes for *tiny, embeddable, zero-dependency*.
+
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/cjintao133-cell/jinvia/badge)](https://scorecard.dev/viewer/?uri=github.com/cjintao133-cell/jinvia)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/17017/badge)](https://www.bestpractices.dev/projects/17017)
 [![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
@@ -181,3 +188,8 @@ SPEC.md  SPEC_JCB.md  test-c.sh  portability.sh  cov.sh  lib.sh  fuzz-soak.sh
 ## License
 
 [Apache-2.0](LICENSE) © Jinvia contributors. Use it, modify it, embed it in closed-source products (keep the copyright and license notices).
+
+---
+
+> 💼 **Need commercial support, a hardened private deployment, or custom integration?** The open-source core is Apache-2.0 and free to commercialize; we offer paid **hardened image, private deploy, integration help & SLA**.
+> Contact: **security@jinvia.dev** (or open an issue labeled `commercial`). See [`docs/TRUST.md`](docs/TRUST.md).
