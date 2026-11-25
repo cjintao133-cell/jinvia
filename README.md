@@ -9,6 +9,13 @@
 
 [English](README.en.md) · [中文](README.md)
 
+> ### 一句话：给「MCP 工具 / AI 插件」用的**零依赖执行沙箱**
+> 别人跑不可信工具，要拖 Rust / WASM 运行时 / 容器；Jinvia **只要一个 C 编译器**。
+> 纯 C11、零第三方依赖、默认拒绝的能力沙箱，自带 MCP stdio server —— 把不受信的第三方工具关起来跑，而不用引入一整套重工具链。
+
+**适合谁**：要把 MCP 工具 / AI 生成的插件安全跑起来、又**不想引 Rust/WASM/容器**的团队；纯 C / 嵌入式 / 无 OS / 边缘设备宿主（WASM 塞不进去的地方）。
+**不适合谁（诚实说）**：需要跑任意 **Python / JavaScript** 的场景 —— 那请用 WASM+QuickJS 或 microVM（E2B/Modal）。Jinvia 跑的是受限 C 子集编译出的 **JCB 字节码**，主打"极轻、可嵌入、零依赖"。
+
 > **无垠星河，无处不落。写一次，哪台机器都能跑。**
 > An infinite river of stars — it lands on anything. Write once, run anywhere a C compiler reaches.
 
@@ -228,3 +235,8 @@ test-c.sh        四道门总闸   portability.sh  可移植性检查   fuzz-soa
 ## License
 
 [Apache-2.0](LICENSE) © Jinvia contributors. 一个 C 编译器就是全部前提——拿去用、改、嵌进闭源产品都行（保留版权与许可声明即可）。
+
+---
+
+> 💼 **需要商用支持 / 私有化加固部署 / 定制集成？** 开源核心 Apache-2.0 免费商用；我们提供付费的**加固镜像、私有部署、集成支持与 SLA**。
+> 联系：**security@jinvia.dev**（或开一个带 `commercial` 标签的 issue）。详见 [`docs/TRUST.md`](docs/TRUST.md)。
