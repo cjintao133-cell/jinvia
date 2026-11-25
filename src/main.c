@@ -100,6 +100,7 @@ int main(int argc, char **argv) {
     jinvia_register_host(rt, "read:motion", h_read_motion, NULL);
     jinvia_register_host(rt, "open:door", h_open_door, NULL);
     jinvia_set_limits(rt, 10000000ULL, 4096, 256);
+    jinvia_set_time_budget(rt, 2000);
 
     int rc = jinvia_load(rt, ctext, jbuf, jl);
     if (rc != JINVIA_OK) {
