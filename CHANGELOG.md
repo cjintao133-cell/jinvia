@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/), versioning [SemVer](https://semver.org/).
 
+## [0.1.4] - 2026-11-25
+
+### Security
+- **Sandbox: enforce iron law #1 (default-deny).** A capability may now only `HOST`-call a host whose name it declared in `needs`; previously any *registered* host was callable by index, so a capability declaring `read:temp` could still invoke `open:door`. Added a `name_in_needs` check in `jinvia_load` and an `examples/sneaky` regression case (denied with exit 3). Found via self-audit — see `docs/REVIEW.md`.
+- **VM: wall-clock time budget.** In addition to the step limit, each call is now bounded by a wall-clock budget (default 2 s in CLI/MCP, checked every 4096 steps), so a slow or hostile capability can no longer hang the single-threaded MCP server. New `jinvia_set_time_budget()`. ABI-safe: `JLimits` is unchanged (budget kept internal).
+
+### Docs
+- README / README.en: TL;DR + 30-second quickstart on the first screen; added an honest **Limitations** section (MCU/bare-metal is a design goal, not yet hardware-validated; single-instance serial; ~270 MIPS is a micro-benchmark; not WASM-compatible; restricted C subset only).
+- SPEC.md: corrected `main.wasm` -> `main.jcb` (JCB bytecode).
+- Added `docs/REVIEW.md`: a security / robustness self-audit (what was found, verified, fixed — including two false alarms that were checked and dismissed).
+
+### Verified
+- C-GATE GREEN: 17 suites × (normal + ASan+UBSan + Valgrind) + CLI integration (incl. `undeclared-host bypass denied(3)`) + sandbox-showdown 7/7 + fuzz 250000×4.
+
 ## [0.1.3] - 2026-11-23
 
 ### Fixed
