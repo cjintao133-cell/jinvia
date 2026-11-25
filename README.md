@@ -4,8 +4,6 @@
 [![CodeQL](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml)
 [![cjintao133-cell/jinvia MCP server](https://glama.ai/mcp/servers/cjintao133-cell/jinvia/badges/score.svg)](https://glama.ai/mcp/servers/cjintao133-cell/jinvia)
 
-![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
-
 # Jinvia · 星垠
 
 [English](README.en.md) · [中文](README.md)
@@ -15,7 +13,15 @@
 > 纯 C11、零第三方依赖、默认拒绝的能力沙箱，自带 MCP stdio server —— 把不受信的第三方工具关起来跑，而不用引入一整套重工具链。
 
 **适合谁**：要把 MCP 工具 / AI 生成的插件安全跑起来、又**不想引 Rust/WASM/容器**的团队；纯 C / 嵌入式 / 无 OS / 边缘设备宿主（WASM 塞不进去的地方）。
-**不适合谁（诚实说）**：需要跑任意 **Python / JavaScript** 的场景 —— 那请用 WASM+QuickJS 或 microVM（E2B/Modal）。Jinvia 跑的是受限 C 子集编译出的 **JCB 字节码**，主打"极轻、可嵌入、零依赖"。
+
+**30 秒跑起来** —— 只需一个 C 编译器（gcc/clang），无其他依赖：
+```bash
+make
+./jinvia run --trace examples/thermostat-guard
+```
+→ 读一次温度、超过 30 度触发报警，全程跑在「默认拒绝」的沙箱里。
+
+![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
 
 > **无垠星河，无处不落。写一次，哪台机器都能跑。**
 > An infinite river of stars — it lands on anything. Write once, run anywhere a C compiler reaches.
