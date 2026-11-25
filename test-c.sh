@@ -40,6 +40,7 @@ if $CC $FLAGS $INC src/cap.c src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jc
   out=$("$OUT/jinvia" run examples/thermostat-guard 2>&1); rc=$?
   if [ $rc -eq 0 ] && echo "$out" | grep -q "报警" && echo "$out" | grep -q "结果 = 1"; then echo " [OK] thermostat-guard"; else echo " [FAIL] thermostat-guard"; fail=1; fi
   "$OUT/jinvia" run examples/evil >/dev/null 2>&1; [ $? -eq 3 ] && echo " [OK] evil denied(3)" || { echo " [FAIL] evil not denied"; fail=1; }
+  "$OUT/jinvia" run examples/sneaky >/dev/null 2>&1; [ $? -eq 3 ] && echo " [OK] undeclared-host bypass denied(3)" || { echo " [FAIL] undeclared-host bypass NOT denied"; fail=1; }
   out=$("$OUT/jinvia" run --trace examples/array-sum 2>&1); rc=$?
   if [ $rc -eq 0 ] && echo "$out" | grep -q "结果 = 60"; then echo " [OK] array-sum"; else echo " [FAIL] array-sum"; fail=1; fi
   out=$("$OUT/jinvia" run --trace examples/door-guard 2>&1); rc=$?
