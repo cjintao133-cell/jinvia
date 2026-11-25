@@ -11,6 +11,7 @@ struct JinviaRuntime {
     JHost hosts[JINVIA_MAX_HOST];
     int   nhosts;
     JLimits lim;
+    uint64_t lim_millis;   /* 墙钟时间预算(ms) */
     /* 当前已加载能力 */
     SrCap   cap;
     JModule mod;
@@ -57,6 +58,13 @@ int jinvia_register_host(JinviaRuntime *rt, const char *name, JinviaHostFn fn, v
     rt->hosts[idx].fn = fn; rt->hosts[idx].ud = ud;
     rt->nhosts++;
     return idx;
+}
+
+int jinvia_set_time_budget(JinviaRuntime *rt, uint64_t ms) {
+    if (!rt) return JINVIA_ERR_NULL;
+    rt->lim_millis = ms;
+    if (rt->vm) j_vm_set_time_budget(rt->vm, ms);
+    return JINVIA_OK;
 }
 
 int jinvia_set_limits(JinviaRuntime *rt, uint64_t max_steps, uint32_t max_stack, uint32_t max_frames) {
@@ -106,6 +114,7 @@ int jinvia_load(JinviaRuntime *rt, const char *conf_text, const uint8_t *jcb, si
     if (!rt->vm) { unload(rt); return J_ERR_OOM; }
     j_vm_set_host(rt->vm, host_bridge, rt);
     j_vm_set_limits(rt->vm, rt->lim);
+    j_vm_set_time_budget(rt->vm, rt->lim_millis);
 
     /* 6) 入口：按能力名匹配 export，否则函数 0 */
     rt->entry = 0;
