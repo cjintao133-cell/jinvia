@@ -1,23 +1,27 @@
 # Jinvia · 星垠
 
-> **An infinite river of stars — it lands on anything.**
-> **Write once, run anywhere a C compiler reaches.**
-
 [中文](README.md) · English
 
 [![cjintao133-cell/jinvia MCP server](https://glama.ai/mcp/servers/cjintao133-cell/jinvia/badges/score.svg)](https://glama.ai/mcp/servers/cjintao133-cell/jinvia)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/cjintao133-cell/jinvia/badge)](https://scorecard.dev/viewer/?uri=github.com/cjintao133-cell/jinvia)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/17017/badge)](https://www.bestpractices.dev/projects/17017)
+[![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml)
 
 > ### TL;DR — a **zero-dependency execution sandbox for MCP tools / AI plugins**
 > Everyone else needs Rust / a WASM runtime / a container to run untrusted tools. **Jinvia needs one C compiler.**
 > Pure C11, zero third-party deps, default-deny capability sandbox, with a built-in MCP stdio server — contain untrusted third-party tools without dragging in a heavy toolchain.
 
 **Good fit**: teams that want to run MCP tools / AI-generated plugins safely **without adopting Rust/WASM/containers**; pure-C / embedded / no-OS / edge hosts (where WASM won't fit).
-**Not a fit (honest)**: running arbitrary **Python / JavaScript** — use WASM+QuickJS or a microVM (E2B/Modal) for that. Jinvia runs a restricted C subset compiled to **JCB bytecode**; it optimizes for *tiny, embeddable, zero-dependency*.
 
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/cjintao133-cell/jinvia/badge)](https://scorecard.dev/viewer/?uri=github.com/cjintao133-cell/jinvia)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/17017/badge)](https://www.bestpractices.dev/projects/17017)
-[![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml)
+**Try it in 30 seconds** — needs only a C compiler (gcc/clang), no other deps:
+```bash
+make
+./jinvia run --trace examples/thermostat-guard
+```
+> reads a temperature, trips an alarm above 30, all inside a default-deny sandbox.
+
+> **An infinite river of stars — it lands on anything. Write once, run anywhere a C compiler reaches.**
 
 ![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
 
