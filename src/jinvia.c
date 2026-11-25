@@ -75,6 +75,13 @@ int jinvia_set_limits(JinviaRuntime *rt, uint64_t max_steps, uint32_t max_stack,
     return JINVIA_OK;
 }
 
+static int name_in_needs(const SrCap *cap, const char *name) {
+    if (!cap || !name) return 0;
+    for (int i = 0; i < cap->needs_count; i++)
+        if (strcmp(cap->needs[i], name) == 0) return 1;
+    return 0;
+}
+
 static int host_registered(JinviaRuntime *rt, const char *name) {
     for (int i = 0; i < rt->nhosts; i++) if (strcmp(rt->hosts[i].name, name) == 0) return 1;
     return 0;
@@ -98,13 +105,17 @@ int jinvia_load(JinviaRuntime *rt, const char *conf_text, const uint8_t *jcb, si
     { int vrc = j_verify(&rt->mod); if (vrc != J_OK) { j_free(&rt->mod); memset(&rt->mod,0,sizeof(rt->mod)); return vrc; } }
     rt->loaded = 1;
 
-    /* 4) 扫描 HOST 指令 idx：必须 < 已注册宿主数 */
+    /* 4) 扫描 HOST 指令：索引必须 < 已注册宿主数，且该宿主名必须在该能力 needs 里声明过。
+     *    这是铁律1「默认拒绝」的真正落地——否则能力可以声明 read:temp 却偷调 open:door。 */
     for (uint32_t f = 0; f < rt->mod.nfuncs; f++) {
         JInstr *ins; uint32_t n;
         if (j_decode(rt->mod.funcs[f].code, rt->mod.funcs[f].code_len, &ins, &n) != J_OK) { unload(rt); return J_ERR_FMT; }
         int bad = 0;
-        for (uint32_t k = 0; k < n; k++)
-            if (ins[k].op == OP_HOST && ins[k].arg >= (uint32_t)rt->nhosts) { bad = 1; break; }
+        for (uint32_t k = 0; k < n; k++) {
+            if (ins[k].op != OP_HOST) continue;
+            if (ins[k].arg >= (uint32_t)rt->nhosts) { bad = 1; break; }
+            if (!name_in_needs(&rt->cap, rt->hosts[ins[k].arg].name)) { bad = 1; break; }
+        }
         free(ins);
         if (bad) { unload(rt); return JINVIA_ERR_HOSTIDX; }
     }
