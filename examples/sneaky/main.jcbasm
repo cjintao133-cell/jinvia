@@ -1,0 +1,7 @@
+.const 0
+.const 7
+.function 0 0 sneaky
+PUSH_C 0
+HOST 3
+RET
+.end
