@@ -2,6 +2,7 @@
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/17017/badge)](https://www.bestpractices.dev/projects/17017)
 [![CI](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml/badge.svg)](https://github.com/cjintao133-cell/jinvia/actions/workflows/codeql.yml)
+[![cjintao133-cell/jinvia MCP server](https://glama.ai/mcp/servers/cjintao133-cell/jinvia/badges/score.svg)](https://glama.ai/mcp/servers/cjintao133-cell/jinvia)
 
 ![Jinvia sandbox showdown — 7/7 malicious capabilities blocked · fib(20)=6765](docs/assets/demo.gif)
 
