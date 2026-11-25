@@ -40,6 +40,8 @@ void           jinvia_free(JinviaRuntime *rt);
 int  jinvia_register_host(JinviaRuntime *rt, const char *name, JinviaHostFn fn, void *ud);
 /* 设置资源预算（0 表示用默认/钳制到上限）。 */
 int  jinvia_set_limits(JinviaRuntime *rt, uint64_t max_steps, uint32_t max_stack, uint32_t max_frames);
+/* 设墙钟时间预算(毫秒,0=不限)，防单次调用卡死宿主。 */
+int  jinvia_set_time_budget(JinviaRuntime *rt, uint64_t ms);
 
 /* 加载一个能力包（conf 文本 + jcb 字���）。成功后可 jinvia_call。重复 load 会替换旧的。 */
 int  jinvia_load(JinviaRuntime *rt, const char *conf_text, const uint8_t *jcb, size_t jcb_len);
