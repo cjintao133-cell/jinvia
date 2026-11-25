@@ -45,13 +45,21 @@ Jinvia pours the **bottom layer of that same floor**:
 
 | Metric | Measured |
 |---|---|
-| Execution throughput | **~270 MIPS** (~3.7 ns/instruction) |
+| Execution throughput | **~270 MIPS** (~3.7 ns/instruction; **micro-benchmark**: pure arithmetic loop; real capabilities with host calls / memory ops are notably lower) |
 | Recursive fib(24) | 46368 in ~9 ms |
 | Load (parse + verify + build VM) | **~0.9 µs**, module bytecode 184 bytes |
 | VM core `jcb_vm` | **~7 KB** text |
 | Minimal embeddable core (read + decode + VM) | **~10 KB** text |
 | Full engine `.so` (assembler/disasm/API) | **~52 KB** text |
 | C-subset compiler `jcb_cc` | ~18 KB (**build-time only**, not linked at runtime) |
+
+## Status & honest limitations
+
+- **MCU / bare-metal is a design goal, not yet validated on real hardware.** Portability is currently verified via aarch64 cross-compile (ARM64 Linux), **not Cortex-M bare metal**. The runtime uses a little libc (malloc/memmove etc.); "zero dependency" means zero **third-party** deps, not libc-free.
+- **Single-instance, serial.** One `JinviaRuntime` executes one call at a time (not concurrent / re-entrant); use multiple instances for concurrency.
+- **Budgets.** Each call is bounded by a step limit and a **wall-clock time budget** (default 2 s in CLI/MCP); an over-budget call is aborted so a slow tool cannot hang the host.
+- **Execution model.** A restricted C subset compiled to integer JCB **bytecode** (no pointers/structs); **not WASM-compatible**; cannot run arbitrary Python/JS.
+- **Performance.** ~270 MIPS is an interpreter micro-benchmark (pure arithmetic loop); real capabilities with host calls and memory operations are notably lower.
 
 ## Quick start
 
