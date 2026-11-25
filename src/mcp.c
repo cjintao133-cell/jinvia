@@ -326,6 +326,7 @@ static int run_tool(Tool *t, JV *arguments, int64_t *res, char *errbuf, size_t e
     jinvia_register_host(rt, "read:motion", h_motion, NULL); /* HOST 2 */
     jinvia_register_host(rt, "open:door", h_door, NULL);     /* HOST 3 */
     jinvia_set_limits(rt, 10000000ULL, 4096, 256);
+    jinvia_set_time_budget(rt, 2000);
     int rc = jinvia_load(rt, conf, jcb, jl);
     if (rc != JINVIA_OK) { snprintf(errbuf, errcap, "%s", errname(rc)); jinvia_free(rt); goto done; }
 
