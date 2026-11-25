@@ -2,6 +2,7 @@
 #include "jinvia/jcb.h"
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define J_VM_STACK_CAP   4096     /* 栈容量上限（物理） */
 #define J_VM_FRAMES_CAP  256      /* 帧容量上限（物理） */
@@ -13,6 +14,7 @@ struct JVM {
     int64_t  *stack; uint32_t sp;
     JHostFn   host;  void *host_ud;
     JLimits   lim;
+    uint64_t  max_millis;   /* 墙钟时间预算(ms),0=不限; 独立于 JLimits 以免 ABI 破坏 */
     uint8_t  *mem; uint32_t mem_size;
     int64_t  *globals; uint32_t nglobals;
 };
@@ -20,6 +22,7 @@ struct JVM {
 JLimits j_vm_default_limits(void){
     JLimits l; l.max_steps = 10000000ULL; l.max_stack = 4096; l.max_frames = 256; return l;
 }
+void j_vm_set_time_budget(JVM *vm, uint64_t ms){ if(!vm) return; vm->max_millis = ms; }
 void j_vm_set_limits(JVM *vm, JLimits lim){
     if(!vm) return;
     JLimits d = j_vm_default_limits();
@@ -77,6 +80,7 @@ JVM *j_vm_new(const JModule *m){
         vm->ins[i]=ins; vm->nins[i]=n;
     }
     vm->lim = j_vm_default_limits();
+    vm->max_millis = 0;
     return vm;
 }
 void j_vm_free(JVM *vm){
@@ -115,11 +119,12 @@ int j_vm_call(JVM *vm, uint32_t func, const int64_t *args, uint32_t nargs, int64
     for(uint32_t i=0;i<nargs;i++){ int r=pushv(vm,args[i]); if(r) return r; }
 
     Frame frames[J_VM_FRAMES_CAP]; uint32_t nf=0;
-    int rc=J_OK; int64_t res=0; uint64_t steps=0;
+    int rc=J_OK; int64_t res=0; uint64_t steps=0; clock_t t0=clock();
     if((rc=enter(vm,func,frames,&nf))) goto cleanup;
 
     while(nf>0){
         if(++steps>vm->lim.max_steps){ rc=J_ERR_VM; break; }
+        if(vm->max_millis && (steps & 0xFFFu)==0u){ if(((clock()-t0)*1000.0/(double)CLOCKS_PER_SEC) > (double)vm->max_millis){ rc=J_ERR_VM; break; } }
         Frame *fr=&frames[nf-1];
         if(fr->pc>=vm->nins[fr->func]){ rc=J_ERR_VM; break; }
         JInstr in=vm->ins[fr->func][fr->pc];
