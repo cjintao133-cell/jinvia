@@ -24,6 +24,13 @@ static void exercise(const uint8_t *buf, size_t len){
         }
         j_vm_free(vm);
     }
+    /* 覆盖反汇编多条路径（fuzz 为覆盖率门禁最后一个二进制，确保计入） */
+    {
+        char dbuf[4096];
+        (void)j_disasm(NULL, dbuf, sizeof dbuf);  /* !m 早退 */
+        (void)j_disasm(&m, dbuf, sizeof dbuf);    /* 正常 */
+        (void)j_disasm(&m, dbuf, 8);              /* 容量不足 -> LIMIT */
+    }
     j_free(&m);
 }
 

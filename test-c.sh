@@ -20,7 +20,7 @@ run_suite cap  src/cap.c tests/test_cap.c
 run_suite jcb  src/jcb_read.c tests/test_jcb.c
 run_suite decode src/jcb_read.c src/jcb_decode.c tests/test_decode.c
 run_suite vm     src/jcb_read.c src/jcb_decode.c src/jcb_vm.c tests/test_vm.c
-run_suite asm    src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c tests/test_asm.c
+run_suite asm    src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_disasm.c tests/test_asm.c
 run_suite edge   src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c tests/test_edge.c
 run_suite limits src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c tests/test_limits.c
 run_suite memory src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c tests/test_memory.c
@@ -74,7 +74,7 @@ done
 
 # fuzz：ASan+UBSan 下随机+变异输入，验证不崩不漏
 echo "----- fuzz (ASan+UBSan) -----"
-if $CC -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -Wall -Wextra -Werror -std=c11 $INC src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c tests/fuzz_jcb.c -o "$OUT/fuzz" && "$OUT/fuzz" 250000; then echo " [OK] fuzz"; else echo " [FAIL] fuzz"; fail=1; fi
+if $CC -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -Wall -Wextra -Werror -std=c11 $INC src/jcb_read.c src/jcb_decode.c src/jcb_vm.c src/jcb_asm.c src/jcb_verify.c src/jcb_disasm.c tests/fuzz_jcb.c -o "$OUT/fuzz" && "$OUT/fuzz" 250000; then echo " [OK] fuzz"; else echo " [FAIL] fuzz"; fail=1; fi
 
 echo "== RESULT =="
 if [ "$fail" -eq 0 ]; then echo "C-GATE GREEN"; else echo "C-GATE RED"; fi

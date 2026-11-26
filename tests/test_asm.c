@@ -23,6 +23,24 @@ static int asm_and_run(const char *text, int64_t expect){
     return (r==expect)?0:-300;
 }
 
+/* 汇编 -> 解析 -> 反汇编，覆盖 jcb_disasm 正常路径 + 错误路径 */
+static void disasm_check(const char *text,const char *want){
+    uint8_t *buf=NULL; size_t len=0;
+    if(j_asm(text,&buf,&len)!=J_OK){ printf("  FAIL disasm: asm\n"); fails++; return; }
+    JModule m;
+    if(j_parse(buf,len,&m)!=J_OK){ free(buf); printf("  FAIL disasm: parse\n"); fails++; return; }
+    free(buf);
+    char out[8192];
+    int n=j_disasm(&m,out,sizeof out);
+    ck(n>0,"disasm returns >0",__LINE__);
+    ck(strstr(out,"disassembly")!=NULL,"disasm header",__LINE__);
+    ck(strstr(out,want)!=NULL,"disasm func listing",__LINE__);
+    ck(j_disasm(NULL,out,sizeof out)==J_ERR_FMT,"disasm null module",__LINE__);
+    char tiny[8];
+    ck(j_disasm(&m,tiny,sizeof tiny)==J_ERR_LIMIT,"disasm small cap",__LINE__);
+    j_free(&m);
+}
+
 int main(void){
     /* 1) 累加 1..10 = 55 */
     const char *sum =
@@ -50,6 +68,9 @@ int main(void){
         ".const 6\n.const 7\n"
         ".function 0 0 m\nPUSH_C 0\nPUSH_C 1\nMUL\nRET\n.end\n";
     ck(asm_and_run(mul,42)==0,"asm mul=42",__LINE__);
+
+    /* 3b) 反汇编 sum 模块，校验可读输出与错误分支 */
+    disasm_check(sum,"func 0");
 
     /* 4) 未知助记符 -> 汇编失败 */
     { uint8_t *b1=NULL; size_t l1=0; ck(j_asm(".function 0 0 x\nFOOBAR\n.end\n",&b1,&l1)!=J_OK,"bad mnemonic",__LINE__); }
